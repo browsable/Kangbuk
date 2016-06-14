@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_week"
+            android:title="@string/nav_week" />
+        <item
+            android:id="@+id/nav_bible"
+            android:title="@string/nav_bible" />
+        <item
+            android:id="@+id/nav_column"
+            android:title="@string/nav_column" />
+        <item
+            android:id="@+id/nav_calendar"
+            android:title="@string/nav_calendar" />
+        <item
+            android:id="@+id/nav_picture"
+            android:title="@string/nav_picture" />
+        <item
+            android:id="@+id/nav_schedule"
+            android:title="@string/nav_schedule" />
+        <item
+            android:id="@+id/nav_intro"
+            android:title="@string/nav_intro" />
+        <item
+            android:id="@+id/nav_place"
+            android:title="@string/nav_place" />
+    </group>
+
+</menu>

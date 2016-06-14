@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">강북제일침례교회</string>
+    <string name="phone">041-852-8236</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+    <string name="facebook_app_id">888132771314722</string>
+
+    <string name="nav_week">주보</string>
+    <string name="nav_bible">성경</string>
+    <string name="nav_column">목회칼럼</string>
+    <string name="nav_calendar">교회일정</string>
+    <string name="nav_picture">교회사진첩</string>
+    <string name="nav_schedule">예배/교육안내</string>
+    <string name="nav_intro">교회소개</string>
+    <string name="nav_place">교회약도</string>
+</resources>
