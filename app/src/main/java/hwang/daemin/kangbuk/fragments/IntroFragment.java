@@ -1,4 +1,4 @@
-package fragments;
+package hwang.daemin.kangbuk.fragments;
 
 import android.app.Fragment;
 import android.os.Bundle;

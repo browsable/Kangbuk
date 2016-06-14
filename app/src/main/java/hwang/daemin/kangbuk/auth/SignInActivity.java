@@ -1,4 +1,4 @@
-package hwang.daemin.kangbuk; /**
+/**
  * Copyright Google Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,11 +12,12 @@ package hwang.daemin.kangbuk; /**
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *//*
+ */
 
-package com.example.kangbuk;
+package hwang.daemin.kangbuk.auth;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -35,43 +36,35 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FacebookAuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import hwang.daemin.kangbuk.main.MainActivity;
+import hwang.daemin.kangbuk.R;
+
 public class SignInActivity extends AppCompatActivity implements
-        GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+        GoogleApiClient.OnConnectionFailedListener{
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
-
-    private SignInButton mSignInButton;
 
     private GoogleApiClient mGoogleApiClient;
 
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_in);
-
-        // Assign fields
-        mSignInButton = (SignInButton) findViewById(R.id.sign_in_button);
-
-        // Set click listeners
-        mSignInButton.setOnClickListener(this);
-
+        setContentView(R.layout.activity_signin);
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken(getString(R.string.default_web_client_id))
                 .requestEmail()
                 .build();
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this */
-/* FragmentActivity *//*
-, this */
-/* OnConnectionFailedListener *//*
-)
+                .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
@@ -79,27 +72,29 @@ public class SignInActivity extends AppCompatActivity implements
         mFirebaseAuth = FirebaseAuth.getInstance();
     }
 
-    @Override
-    public void onClick(View v) {
+    public void mOnClick(View v) {
         switch (v.getId()) {
-            case R.id.sign_in_button:
+            case R.id.btGoogle:
                 signIn();
+                break;
+            case R.id.btFacebook:
+                startActivity(new Intent(this, FacebookLoginActivity.class));
+                break;
+            case R.id.btEmail:
+                startActivity(new Intent(this, EmailPasswordActivity.class));
+                break;
+            case R.id.btAnonymous:
+                startActivity(new Intent(this, AnonymousAuthActivity.class));
                 break;
         }
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-        // be available.
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
-    }
     private void signIn(){
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
+        SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
+        pref.edit().putInt("loginType",0).commit();
     }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode == RC_SIGN_IN){
@@ -121,13 +116,20 @@ public class SignInActivity extends AppCompatActivity implements
                 Log.d(TAG,"signInWithCredential:onComplete:"+task.isSuccessful());
                 if(!task.isSuccessful()){
                     Log.w(TAG,"signInWithCredentail", task.getException());
-                    Toast.makeText(SignInActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignInActivity.this, getString(R.string.auth_sigin_failed), Toast.LENGTH_SHORT).show();
                 }else{
-                    startActivity(new Intent(SignInActivity.this, MainActivity.class));
+                    Intent i = new Intent(SignInActivity.this, MainActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(i);
                     finish();
                 }
             }
         });
     }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
+    }
 }
-*/

@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="login">#2196F3</color>
+    <color name="google">#00BCD4</color>
+    <color name="email">#03A9F4</color>
+    <color name="anonymous">#4CAF50</color>
+    <color name="grey_100">#F5F5F5</color>
+    <color name="grey_300">#E0E0E0</color>
 </resources>

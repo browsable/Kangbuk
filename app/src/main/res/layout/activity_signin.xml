@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="50dp"
+    android:orientation="vertical">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1.8"
+        android:text="@string/sign_in"
+        android:textSize="30sp"
+        android:gravity="center"
+        android:textStyle="bold" />
+    <TextView
+        android:id="@+id/btGoogle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="3.6"
+        android:text="@string/google_title_text"
+        android:textSize="@dimen/textsize_xxl"
+        android:gravity="center"
+        android:onClick="mOnClick"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@color/google"
+        />
+    <TextView
+        android:id="@+id/btFacebook"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="3.6"
+        android:gravity="center"
+        android:text="@string/facebook_title_text"
+        android:textSize="@dimen/textsize_xxl"
+        android:onClick="mOnClick"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"
+        android:background="@color/colorPrimary"
+        />
+
+    <TextView
+        android:id="@+id/btEmail"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="3.6"
+        android:text="@string/emailpassword_title_text"
+        android:textSize="@dimen/textsize_xxl"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:background="@color/email"
+        android:onClick="mOnClick"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/btAnonymous"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="3.6"
+        android:gravity="center"
+        android:text="@string/anonymous_title_text"
+        android:textSize="@dimen/textsize_xxl"
+        android:onClick="mOnClick"
+        android:textColor="@android:color/white"
+        android:background="@color/anonymous"
+        android:textStyle="bold" />
+</LinearLayout>

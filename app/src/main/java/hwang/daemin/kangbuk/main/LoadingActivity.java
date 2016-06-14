@@ -1,9 +1,11 @@
-package hwang.daemin.kangbuk;
+package hwang.daemin.kangbuk.main;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
+
+import hwang.daemin.kangbuk.R;
 
 /**
  * Created by user on 2016-06-11.

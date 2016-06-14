@@ -7,7 +7,15 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".main.LoadingActivity"
-    android:background="@drawable/bg_loading"
-    >
+    tools:context="auth.AnonymousAuthActivity">
+
+    <Button
+        android:id="@+id/button_anonymous_sign_in"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sign_in"
+        android:layout_marginTop="@dimen/margin_xxl"
+        android:theme="@style/ThemeOverlay.MyDarkButton" />
+
+
 </RelativeLayout>
