@@ -3,11 +3,9 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_notice"
-            android:title="@string/nav_notice" />
-        <item
-            android:id="@+id/nav_week"
-            android:title="@string/nav_week" />
+            android:id="@+id/nav_home"
+            android:title="@string/nav_home_eng" />
+
         <item
             android:id="@+id/nav_bible"
             android:title="@string/nav_bible" />
@@ -24,11 +22,36 @@
             android:id="@+id/nav_schedule"
             android:title="@string/nav_schedule" />
         <item
-            android:id="@+id/nav_intro"
-            android:title="@string/nav_intro" />
-        <item
             android:id="@+id/nav_place"
             android:title="@string/nav_place" />
     </group>
 
+    <item android:title="@string/nav_week">
+        <menu>
+            <item
+                android:id="@+id/nav_week_mid"
+                android:title="@string/nav_week_mid" />
+            <item
+                android:id="@+id/nav_week_afternoon"
+                android:title="@string/nav_week_afternoon" />
+            <item
+                android:id="@+id/nav_week_wed"
+                android:title="@string/nav_week_wed" />
+            <item
+                android:id="@+id/nav_week_service"
+                android:title="@string/nav_week_service" />
+            <item
+                android:id="@+id/nav_week_group"
+                android:title="@string/nav_week_group" />
+            <item
+                android:id="@+id/nav_week_study"
+                android:title="@string/nav_week_study" />
+            <item
+                android:id="@+id/nav_week_daily"
+                android:title="@string/nav_week_daily" />
+            <item
+                android:id="@+id/nav_week_notice"
+                android:title="@string/nav_week_notice" />
+        </menu>
+    </item>
 </menu>

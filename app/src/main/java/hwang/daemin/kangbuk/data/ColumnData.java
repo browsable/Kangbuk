@@ -1,5 +1,6 @@
 package hwang.daemin.kangbuk.data;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
@@ -8,11 +9,13 @@ import java.util.List;
  * Created by user on 2016-06-14.
  */
 public class ColumnData {
+    @JsonProperty("products")
+    private List<Product> products;
     @JsonProperty("success")
     private int success;
-    @JsonProperty("products")
-    private List<Products> products;
-    public static class Products{
+    @JsonProperty("loginstate")
+    private int loginstate;
+    public static class Product{
         @JsonProperty("num")
         private String num;
         @JsonProperty("title")
@@ -23,8 +26,12 @@ public class ColumnData {
         private String bible_content;
         @JsonProperty("date")
         private String date;
-
-        public Products(String num, String title, String content, String bible_content, String date) {
+        @JsonCreator
+        public Product(@JsonProperty("num") String num,
+                       @JsonProperty("title") String title,
+                       @JsonProperty("content") String content,
+                       @JsonProperty("bible_content") String bible_content,
+                       @JsonProperty("date") String date) {
             this.num = num;
             this.title = title;
             this.content = content;
@@ -73,13 +80,6 @@ public class ColumnData {
         }
     }
 
-    public List<Products> getProducts() {
-        return products;
-    }
-    public void setProducts(List<Products> products) {
-        this.products = products;
-    }
-
     public int getSuccess() {
         return success;
     }
@@ -88,8 +88,27 @@ public class ColumnData {
         this.success = success;
     }
 
-    public ColumnData(int success, List<Products> products) {
-        this.success = success;
+    public int getLoginstate() {
+        return loginstate;
+    }
+
+    public void setLoginstate(int loginstate) {
+        this.loginstate = loginstate;
+    }
+
+    public List<Product> getProducts() {
+        return products;
+    }
+    public void setProducts(List<Product> products) {
         this.products = products;
     }
+    @JsonCreator
+    public ColumnData(@JsonProperty("products") List<Product> products,
+                      @JsonProperty("success") int success,
+                      @JsonProperty("loginstate") int loginstate) {
+        this.products = products;
+        this.success = success;
+        this.loginstate = loginstate;
+    }
+
 }

@@ -24,18 +24,30 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.SignInActivity;
+import hwang.daemin.kangbuk.common.BackPressCloseHandler;
 import hwang.daemin.kangbuk.common.User;
+import hwang.daemin.kangbuk.event.BackKeyEvent;
 import hwang.daemin.kangbuk.fragments.BibleFragment;
 import hwang.daemin.kangbuk.fragments.CalendarFragment;
 import hwang.daemin.kangbuk.fragments.ColumnFragment;
-import hwang.daemin.kangbuk.fragments.IntroFragment;
 import hwang.daemin.kangbuk.fragments.MainFragment;
 import hwang.daemin.kangbuk.fragments.PictureFragment;
 import hwang.daemin.kangbuk.fragments.PlaceFragment;
 import hwang.daemin.kangbuk.fragments.ScheduleFragment;
-import hwang.daemin.kangbuk.fragments.WeekFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekAfternoonFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekDailyFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekGroupFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekMidFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekNoticeFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekServiceFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekStudyFragment;
+import hwang.daemin.kangbuk.fragments.week.WeekWedFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,GoogleApiClient.OnConnectionFailedListener {
@@ -43,19 +55,32 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_INVITE = 1;
+    private BackPressCloseHandler backPressCloseHandler;
+    private String backKeyName;
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        EventBus.getDefault().register(this);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseAuth = FirebaseAuth.getInstance();
         mFirebaseUser = mFirebaseAuth.getCurrentUser();
         User.INFO.loginType = pref.getInt("loginType",0);
+        backKeyName = "";
         if(mFirebaseUser==null){
             // Not signed in, launch the Sign In activity
             startActivity(new Intent(this, SignInActivity.class));
@@ -69,9 +94,9 @@ public class MainActivity extends AppCompatActivity
             }else if( User.INFO.loginType==3){ //anonymous
                 User.INFO.UserName = ANONYMOUS;
             }
-            /*if(mFirebaseUser.getPhotoUrl() != null){
-                mPhotoUrl = mFirebaseUser.getPhotoUrl().toString();
-            }*/
+            if(mFirebaseUser.getPhotoUrl() != null){
+                User.INFO.PhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+            }
         }
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
@@ -102,17 +127,14 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fm = getFragmentManager();
         fm.beginTransaction().replace(R.id.content_frame, new MainFragment()).commit();
 
-        // Initialize Firebase Auth
-
+        backPressCloseHandler = new BackPressCloseHandler(this);
     }
-
-    @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            super.onBackPressed();
+            backPressCloseHandler.onBackPressed(backKeyName);
         }
     }
 
@@ -152,43 +174,51 @@ public class MainActivity extends AppCompatActivity
         FragmentManager fm = getFragmentManager();
         // Handle navigation view item clicks here.
         switch (item.getItemId()){
-            case R.id.nav_notice:
+            case R.id.nav_home:
                 fm.beginTransaction().replace(R.id.content_frame,new MainFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_notice));
                 break;
             case R.id.nav_bible:
                 fm.beginTransaction().replace(R.id.content_frame,new BibleFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_bible));
-                break;
-            case R.id.nav_week:
-                fm.beginTransaction().replace(R.id.content_frame,new WeekFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_week));
                 break;
             case R.id.nav_column:
                 fm.beginTransaction().replace(R.id.content_frame,new ColumnFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_column));
                 break;
             case R.id.nav_calendar:
                 fm.beginTransaction().replace(R.id.content_frame,new CalendarFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_calendar));
                 break;
             case R.id.nav_picture:
                 fm.beginTransaction().replace(R.id.content_frame,new PictureFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_picture));
                 break;
             case R.id.nav_schedule:
                 fm.beginTransaction().replace(R.id.content_frame,new ScheduleFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_schedule));
-                break;
-            case R.id.nav_intro:
-                fm.beginTransaction().replace(R.id.content_frame,new IntroFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_intro));
                 break;
             case R.id.nav_place:
                 fm.beginTransaction().replace(R.id.content_frame,new PlaceFragment()).commit();
-                getSupportActionBar().setTitle(getString(R.string.nav_place));
                 break;
-
+            case R.id.nav_week_mid:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekMidFragment()).commit();
+                break;
+            case R.id.nav_week_afternoon:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekAfternoonFragment()).commit();
+                break;
+            case R.id.nav_week_wed:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekWedFragment()).commit();
+                break;
+            case R.id.nav_week_service:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekServiceFragment()).commit();
+                break;
+            case R.id.nav_week_group:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekGroupFragment()).commit();
+                break;
+            case R.id.nav_week_study:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekStudyFragment()).commit();
+                break;
+            case R.id.nav_week_daily:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekDailyFragment()).commit();
+                break;
+            case R.id.nav_week_notice:
+                fm.beginTransaction().replace(R.id.content_frame,new WeekNoticeFragment()).commit();
+                break;
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -224,5 +254,9 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Failed to send invitation.");
             }
         }
+    }
+    @Subscribe
+    public void onEventMainThread(BackKeyEvent e) {
+        backKeyName = e.getFragName();
     }
 }

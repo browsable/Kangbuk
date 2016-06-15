@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string-array name="예배구분">
+        <item>새벽 기도회</item>
+        <item>주일 낮 예배</item>
+        <item>주일오후예배</item>
+        <item>수요저녁예배</item>
+        <item>주일학교</item>
+        <item>중고등부</item>
+        <item>쳥년대학부</item>
+        <item>새가족성경공부</item>
+        <item>목자교사성경공부</item>
+        <item>금요연합기도회</item>
+        <item>영어반(일반,중고등)</item>
+    </string-array>
+    
+
+
+    <string-array name="성경목록">
+        <item>창세기</item>
+		<item>출애굽기</item>
+		<item>레위기</item>
+		<item>민수기</item>
+		<item>신명기</item>
+		<item>여호수아</item>
+		<item>사사기</item>
+		<item>룻기</item>
+		<item>사무엘상</item>
+		<item>사무엘하</item>
+		<item>열왕기상</item>
+		<item>열왕기하</item>
+		<item>역대상</item>
+		<item>역대하</item>
+		<item>에스라</item>
+		<item>느헤미아</item>
+		<item>에스더</item>
+		<item>욥기</item>
+		<item>시편</item>
+		<item>잠언</item>
+		<item>전도서</item>
+		<item>아가</item>
+		<item>이사야</item>
+		<item>예레미야</item>
+		<item>애가</item>
+		<item>에스겔</item>
+		<item>다니엘</item>
+		<item>호세아</item>
+		<item>요엘</item>
+		<item>아모스</item>
+		<item>오바댜</item>
+		<item>요나</item>
+		<item>미가</item>
+		<item>나훔</item>
+		<item>하박국</item>
+		<item>스바냐</item>
+		<item>학개</item>
+		<item>스가랴</item>
+		<item>말라기</item>
+	    <item>마태복음</item>
+        <item>마가복음</item>
+        <item>누가복음</item>
+        <item>요한복음</item>
+        <item>사도행전</item>
+        <item>로마서</item>
+        <item>고린도전서</item>
+        <item>고린도후서</item>
+        <item>갈라디아서</item>
+        <item>에베소서</item>
+        <item>빌립보서</item>
+        <item>골로새서</item>
+        <item>데살로니가전서</item>
+        <item>데살로니가후서</item>
+        <item>디모데전서</item>
+        <item>디모데후서</item>
+        <item>디도서</item>
+        <item>빌레몬서</item>
+        <item>히브리서</item>
+        <item>야고보서</item>
+        <item>베드로전서</item>
+        <item>베드로후서</item>
+        <item>요한일서</item>
+        <item>요한이서</item>
+        <item>요한삼서</item>
+        <item>유다서</item>
+        <item>요한계시록</item>
+        
+        
+    </string-array>
+    
+    
+     <string-array name="menu0">
+        <item >주일낮예배</item>
+        <item >주일오후예배</item>
+        <item >수요예배</item>
+        <item >예배봉사위원</item>
+        <item >금주의목장예배</item>
+        <item >목장성경공부</item>
+        <item >금주영혼의양식</item>
+        <item >교회소식</item>
+    </string-array>
+    
+    <string-array name="menu1">
+        <item >예배순서</item>
+        <item >새벽이슬소식:)</item>
+        <item >말씀되돌아보기</item>
+        <item >묵상</item>
+    </string-array>
+    
+    <string-array name="menu2">
+        <item >예배순서</item>
+        <item >광고</item>
+        <item >예배봉사위원</item>
+        <item >오늘의암송말씀</item>
+        <item >성가대</item>
+        <item >자랑하기</item>
+        <item >금주의만화</item>
+    </string-array>
+    
+      <string-array name="menu3">
+        <item >준비중</item>
+    </string-array>
+    
+      
+      <string-array name="목장">
+        <item >1목장</item>
+        <item >2목장</item>
+        <item >3목장</item>
+        <item >4목장</item>
+        <item >5목장</item>
+        <item >6목장</item>
+        <item >7목장</item>
+        <item >8목장</item>
+    </string-array>
+    <string-array name="목장2">
+        <item >해당없음</item>
+        <item >1목장</item>
+        <item >2목장</item>
+        <item >3목장</item>
+        <item >4목장</item>
+        <item >5목장</item>
+        <item >6목장</item>
+        <item >7목장</item>
+        <item >8목장</item>
+    </string-array>
+    
+       <string-array name="소속기관">
+        <item >해당없음</item>
+        <item>주일학교</item>
+        <item>중고등부</item>
+        <item>청년부</item>
+        <item>여선교회</item>
+        <item>남선교회</item>
+    </string-array>
+</resources>

@@ -15,4 +15,5 @@ public enum User {
     public int loginType; //0:google 1:facebook 2:email 3: anonymous
     public String UserName;
     public String appVer;
+    public String PhotoUrl;
 }

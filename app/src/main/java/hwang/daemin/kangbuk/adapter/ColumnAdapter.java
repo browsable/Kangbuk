@@ -23,23 +23,25 @@ import hwang.daemin.kangbuk.data.ColumnData;
 public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.MyViewHolder> {
 
     private Context mContext;
-    private List<ColumnData.Products> columnList;
+    private List<ColumnData.Product> columnList;
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView tvTitle;
-        public TextView tvContent;
         public TextView tvBibleContent;
+        public TextView tvDate;
+        public TextView tvNum;
 
         public MyViewHolder(View view) {
             super(view);
             tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-            tvContent = (TextView) view.findViewById(R.id.tvContent);
             tvBibleContent = (TextView) view.findViewById(R.id.tvBibleContent);
+            tvDate = (TextView) view.findViewById(R.id.tvDate);
+            tvNum = (TextView) view.findViewById(R.id.tvNum);
         }
     }
 
 
-    public ColumnAdapter(Context mContext, List<ColumnData.Products> columnList) {
+    public ColumnAdapter(Context mContext, List<ColumnData.Product> columnList) {
         this.mContext = mContext;
         this.columnList = columnList;
     }
@@ -48,17 +50,16 @@ public class ColumnAdapter extends RecyclerView.Adapter<ColumnAdapter.MyViewHold
     public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.listitem_column, parent, false);
-
         return new MyViewHolder(itemView);
     }
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, int position) {
-        final int pos = position;
-        ColumnData.Products column = columnList.get(position);
+        ColumnData.Product column = columnList.get(position);
+        holder.tvNum.setText(column.getNum());
         holder.tvTitle.setText(column.getTitle());
         holder.tvBibleContent.setText(column.getBible_content());
-        holder.tvContent.setText(column.getContent());
+        holder.tvDate.setText(column.getDate());
 
     }
 
