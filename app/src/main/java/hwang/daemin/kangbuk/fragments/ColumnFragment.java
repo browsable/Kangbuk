@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,6 +48,7 @@ import hwang.daemin.kangbuk.event.BackKeyEvent;
  * Created by user on 2016-06-14.
  */
 public class ColumnFragment extends Fragment {
+    private ProgressBar bar;
     private RecyclerView recyclerView;
     private ColumnAdapter adapter;
     private List<ColumnData.Product> columnList;
@@ -57,6 +59,7 @@ public class ColumnFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_column,container,false);
         EventBus.getDefault().post(new BackKeyEvent(""));
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.nav_column));
+        bar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view); //
         columnList = new ArrayList<>(); // 메모 공간 선언 (메모리 할당)
         adapter = new ColumnAdapter(getActivity(), columnList); // 어댑터 메모리 할당
@@ -66,7 +69,7 @@ public class ColumnFragment extends Fragment {
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
-        getColumnData();
+        getColumnData(getActivity());
         recyclerView.addOnItemTouchListener(new RecyclerViewOnItemClickListener(getActivity(), recyclerView,
                 new RecyclerViewOnItemClickListener.OnItemClickListener() {
                     @Override
@@ -131,7 +134,7 @@ public class ColumnFragment extends Fragment {
     }
 
     public static final String GET_COLUMN = "http://browsable.cafe24.com/column/get_all_column.php";
-    public void getColumnData() {
+    public void getColumnData(final Context context) {
         Jackson2Request<ColumnData> jackson2Request = new Jackson2Request<>(
                 Request.Method.GET, GET_COLUMN, ColumnData.class,
                 new Response.Listener<ColumnData>() {
@@ -141,11 +144,14 @@ public class ColumnFragment extends Fragment {
                             columnList.addAll(response.getProducts());
                             adapter.notifyDataSetChanged();
                         }
+                        bar.setVisibility(View.GONE);
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 error.printStackTrace();
+                Toast.makeText(context,context.getString(R.string.network_error), Toast.LENGTH_SHORT).show();
+                bar.setVisibility(View.GONE);
             }
         });
         MyVolley.getRequestQueue().add(jackson2Request);
