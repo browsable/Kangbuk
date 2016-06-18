@@ -20,22 +20,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.data.User;
+import hwang.daemin.kangbuk.firebase.FirebaseUtil;
 import hwang.daemin.kangbuk.main.MainActivity;
 
 /**
@@ -61,7 +58,7 @@ public class AnonymousAuthActivity extends BaseActivity implements
         setContentView(R.layout.activity_anonymous_auth);
 
         // [START initialize_auth]
-        mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseUtil.getAuth();
         // [END initialize_auth]
 
         // [START auth_state_listener]
@@ -70,10 +67,10 @@ public class AnonymousAuthActivity extends BaseActivity implements
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
+                    // My is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
-                    // User is signed out
+                    // My is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
                 // [START_EXCLUDE]
@@ -127,6 +124,8 @@ public class AnonymousAuthActivity extends BaseActivity implements
                             SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
                             pref.edit().putInt("loginType",3).commit();
                             finish();
+                            FirebaseUser mFirebaseUser = task.getResult().getUser();
+                            FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                             Intent i = new Intent(AnonymousAuthActivity.this, MainActivity.class);
                             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

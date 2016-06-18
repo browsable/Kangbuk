@@ -54,4 +54,9 @@
     <item name="android:gravity">center</item>
     <item name="android:textSize">36sp</item>
     </style>
+    <style name="UserStatsTextStyle">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">@android:color/primary_text_light</item>
+        <item name="android:textStyle">normal</item>
+    </style>
 </resources>

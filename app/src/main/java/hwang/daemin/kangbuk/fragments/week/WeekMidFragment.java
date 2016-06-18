@@ -16,15 +16,14 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.common.CustomJSONObjectRequest;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.common.MyVolley;
-import hwang.daemin.kangbuk.event.BackKeyEvent;
 
 
 /**
@@ -60,7 +59,7 @@ public class WeekMidFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_week_mid,container,false);
-        EventBus.getDefault().post(new BackKeyEvent(""));
+        My.INFO.backKeyName ="";
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.nav_week_mid));
         bar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         regist_day0 = (TextView) rootView.findViewById(R.id.regist_day0);

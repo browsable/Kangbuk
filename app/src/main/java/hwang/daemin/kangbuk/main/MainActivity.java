@@ -25,19 +25,17 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.SignInActivity;
 import hwang.daemin.kangbuk.common.BackPressCloseHandler;
-import hwang.daemin.kangbuk.common.User;
-import hwang.daemin.kangbuk.event.BackKeyEvent;
+import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.fragments.BibleFragment;
 import hwang.daemin.kangbuk.fragments.CalendarFragment;
 import hwang.daemin.kangbuk.fragments.ColumnFragment;
 import hwang.daemin.kangbuk.fragments.MainFragment;
-import hwang.daemin.kangbuk.fragments.PictureFragment;
+import hwang.daemin.kangbuk.fragments.picture.PictureFragment;
 import hwang.daemin.kangbuk.fragments.PlaceFragment;
 import hwang.daemin.kangbuk.fragments.ScheduleFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekAfternoonFragment;
@@ -56,47 +54,42 @@ public class MainActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_INVITE = 1;
     private BackPressCloseHandler backPressCloseHandler;
-    private String backKeyName;
     // Firebase instance variables
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
-    @Override
-    public void onResume() {
-        super.onResume();
-        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
-    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        EventBus.getDefault().register(this);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseUser = mFirebaseAuth.getCurrentUser();
-        User.INFO.loginType = pref.getInt("loginType",0);
-        backKeyName = "";
+        FirebaseUtil.FirebaseInstanceInit();
+        mFirebaseAuth = FirebaseUtil.getAuth();
+        mFirebaseUser = FirebaseUtil.getCurrentUser();
+        My.INFO.loginType = pref.getInt("loginType",0);
+        My.INFO.backKeyName = "";
         if(mFirebaseUser==null){
             // Not signed in, launch the Sign In activity
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
         }else{
-            if( User.INFO.loginType==0|| User.INFO.loginType==1) { //google, facebook
-                User.INFO.UserName = mFirebaseUser.getDisplayName();
-            }else if( User.INFO.loginType==2){ //email
-                User.INFO.UserName = pref.getString("UserName","anonymous");
-            }else if( User.INFO.loginType==3){ //anonymous
-                User.INFO.UserName = ANONYMOUS;
+            if( My.INFO.loginType==0|| My.INFO.loginType==1) { //google, facebook
+                My.INFO.name = mFirebaseUser.getDisplayName();
+            }else if( My.INFO.loginType==2){ //email
+                My.INFO.name = pref.getString("UserName","anonymous");
+            }else if( My.INFO.loginType==3){ //anonymous
+                My.INFO.name = ANONYMOUS;
             }
+            My.INFO.id = mFirebaseUser.getUid();
             if(mFirebaseUser.getPhotoUrl() != null){
-                User.INFO.PhotoUrl = mFirebaseUser.getPhotoUrl().toString();
+                My.INFO.photoUrl = mFirebaseUser.getPhotoUrl().toString();
             }
+
         }
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
@@ -105,15 +98,6 @@ public class MainActivity extends AppCompatActivity
                 .build();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        /*FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -134,7 +118,7 @@ public class MainActivity extends AppCompatActivity
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            backPressCloseHandler.onBackPressed(backKeyName);
+            backPressCloseHandler.onBackPressed(My.INFO.backKeyName);
         }
     }
 
@@ -151,14 +135,18 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
+            case R.id.action_profile:
+                startActivity(new Intent(MainActivity.this, UserDetailActivity.class));
+                return true;
             case R.id.sign_out_menu:
                 mFirebaseAuth.signOut();
-                if(User.INFO.loginType==0)
+                if(My.INFO.loginType==0)
                     Auth.GoogleSignInApi.signOut(mGoogleApiClient);
-                else if(User.INFO.loginType==1)
+                else if(My.INFO.loginType==1)
                     LoginManager.getInstance().logOut();
-                User.INFO.UserName = ANONYMOUS;
+                My.INFO.name = ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
+                finish();
                 return true;
             case R.id.invite_menu:
                 sendInvitation();
@@ -254,9 +242,5 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Failed to send invitation.");
             }
         }
-    }
-    @Subscribe
-    public void onEventMainThread(BackKeyEvent e) {
-        backKeyName = e.getFragName();
     }
 }

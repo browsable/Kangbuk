@@ -27,21 +27,17 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.navercorp.volleyextensions.request.Jackson2Request;
 
-import org.greenrobot.eventbus.EventBus;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.adapter.ColumnAdapter;
 import hwang.daemin.kangbuk.common.CustomJSONObjectRequest;
+import hwang.daemin.kangbuk.common.GridSpacingItemDecoration;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.common.MyVolley;
 import hwang.daemin.kangbuk.common.RecyclerViewOnItemClickListener;
 import hwang.daemin.kangbuk.data.ColumnData;
-import hwang.daemin.kangbuk.event.BackKeyEvent;
 
 
 /**
@@ -52,12 +48,13 @@ public class ColumnFragment extends Fragment {
     private RecyclerView recyclerView;
     private ColumnAdapter adapter;
     private List<ColumnData.Product> columnList;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_column,container,false);
-        EventBus.getDefault().post(new BackKeyEvent(""));
+        My.INFO.backKeyName ="";
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.nav_column));
         bar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view); //
@@ -90,49 +87,10 @@ public class ColumnFragment extends Fragment {
         ));
         return rootView;
     }
-    public class GridSpacingItemDecoration extends RecyclerView.ItemDecoration {
-
-        private int spanCount;
-        private int spacing;
-        private boolean includeEdge;
-
-        public GridSpacingItemDecoration(int spanCount, int spacing, boolean includeEdge) {
-            this.spanCount = spanCount;
-            this.spacing = spacing;
-            this.includeEdge = includeEdge;
-        }
-
-        @Override
-        public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
-            int position = parent.getChildAdapterPosition(view); // item position
-            int column = position % spanCount; // item column
-
-            if (includeEdge) {
-                outRect.left = spacing - column * spacing / spanCount; // spacing - column * ((1f / spanCount) * spacing)
-                outRect.right = (column + 1) * spacing / spanCount; // (column + 1) * ((1f / spanCount) * spacing)
-
-                if (position < spanCount) { // top edge
-                    outRect.top = spacing;
-                }
-                outRect.bottom = spacing; // item bottom
-            } else {
-                outRect.left = column * spacing / spanCount; // column * ((1f / spanCount) * spacing)
-                outRect.right = spacing - (column + 1) * spacing / spanCount; // spacing - (column + 1) * ((1f /    spanCount) * spacing)
-                if (position >= spanCount) {
-                    outRect.top = spacing; // item top
-                }
-            }
-        }
-    }
-
-    /**
-     * Converting dp to pixel
-     */
     private int dpToPx(int dp) {
         Resources r = getResources();
         return Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, r.getDisplayMetrics()));
     }
-
     public static final String GET_COLUMN = "http://browsable.cafe24.com/column/get_all_column.php";
     public void getColumnData(final Context context) {
         Jackson2Request<ColumnData> jackson2Request = new Jackson2Request<>(

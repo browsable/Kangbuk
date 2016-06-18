@@ -21,8 +21,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -30,7 +28,6 @@ import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.FacebookSdk;
-import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -42,6 +39,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.data.User;
+import hwang.daemin.kangbuk.firebase.FirebaseUtil;
 import hwang.daemin.kangbuk.main.MainActivity;
 
 /**
@@ -69,7 +68,7 @@ public class FacebookLoginActivity extends BaseActivity{
 
         // [START initialize_auth]
         // Initialize Firebase Auth
-        mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseUtil.getAuth();
         // [END initialize_auth]
 
         // [START auth_state_listener]
@@ -78,7 +77,7 @@ public class FacebookLoginActivity extends BaseActivity{
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
+                    // My is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
                     pref.edit().putInt("loginType",1).commit();
@@ -88,7 +87,7 @@ public class FacebookLoginActivity extends BaseActivity{
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(i);
                 } else {
-                    // User is signed out
+                    // My is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
                 // [START_EXCLUDE]
@@ -175,6 +174,9 @@ public class FacebookLoginActivity extends BaseActivity{
                             Log.w(TAG, "signInWithCredential", task.getException());
                             Toast.makeText(FacebookLoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
+                        }else{
+                            FirebaseUser mFirebaseUser = task.getResult().getUser();
+                            FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                         }
                         // [START_EXCLUDE]
                         hideProgressDialog();

@@ -1,3 +1,4 @@
+/*
 package hwang.daemin.kangbuk.main;
 
 import android.os.Bundle;
@@ -118,3 +119,4 @@ public class NewPictureActivity extends AppCompatActivity {
     }
     // [END write_fan_out]
 }
+*/

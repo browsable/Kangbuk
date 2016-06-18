@@ -30,16 +30,17 @@ import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FacebookAuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.main.MainActivity;
 import hwang.daemin.kangbuk.R;
 
@@ -69,7 +70,7 @@ public class SignInActivity extends AppCompatActivity implements
                 .build();
 
         // Initialize FirebaseAuth
-        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseAuth = FirebaseUtil.getAuth();
     }
 
     public void mOnClick(View v) {
@@ -118,6 +119,8 @@ public class SignInActivity extends AppCompatActivity implements
                     Log.w(TAG,"signInWithCredentail", task.getException());
                     Toast.makeText(SignInActivity.this, getString(R.string.auth_sigin_failed), Toast.LENGTH_SHORT).show();
                 }else{
+                    FirebaseUser mFirebaseUser = task.getResult().getUser();
+                    FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -15,21 +16,21 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.common.CustomJSONObjectRequest;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.common.MyVolley;
-import hwang.daemin.kangbuk.event.BackKeyEvent;
 
 
 /**
  * Created by user on 2016-06-14.
  */
 public class WeekWedFragment extends Fragment {
+    private ProgressBar bar;
     private static String url_get_weekly0 = "http://browsable.cafe24.com/weekly/get_weekly0.php";
     private static final String TAG_SUCCESS= "success";
     private static final String TAG_WEEKLY0 = "weekly0";
@@ -46,8 +47,9 @@ public class WeekWedFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_week_wed,container,false);
-        EventBus.getDefault().post(new BackKeyEvent(""));
+        My.INFO.backKeyName ="";
         ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(getString(R.string.nav_week_wed));
+        bar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         regist_day2 = (TextView) rootView.findViewById(R.id.regist_day2);
         weekly2_1 = (TextView) rootView.findViewById(R.id.weekly2_1);
         weekly2_2 = (TextView) rootView.findViewById(R.id.weekly2_2);
@@ -80,11 +82,13 @@ public class WeekWedFragment extends Fragment {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        bar.setVisibility(View.GONE);
                     }
                 }, new Response.ErrorListener() {
 
             @Override
             public void onErrorResponse(VolleyError error) {
+                bar.setVisibility(View.GONE);
                 Toast.makeText(context, context.getString(R.string.network_error), Toast.LENGTH_SHORT).show();
             }
         });

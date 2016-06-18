@@ -15,19 +15,19 @@
  */
 package hwang.daemin.kangbuk.data;
 
-public class FriendlyMessage {
+public class GroupData {
 
     private String text;
     private String name;
-    private String photoUrl;
+    private String uId;
 
-    public FriendlyMessage() {
+    public GroupData() {
     }
 
-    public FriendlyMessage(String text, String name, String photoUrl) {
+    public GroupData(String text, String name, String uId) {
         this.text = text;
         this.name = name;
-        this.photoUrl = photoUrl;
+        this.uId = uId;
     }
 
     public String getText() {
@@ -46,11 +46,11 @@ public class FriendlyMessage {
         this.name = name;
     }
 
-    public String getPhotoUrl() {
-        return photoUrl;
+    public String getuId() {
+        return uId;
     }
 
-    public void setPhotoUrl(String photoUrl) {
-        this.photoUrl = photoUrl;
+    public void setuId(String uId) {
+        this.uId = uId;
     }
 }

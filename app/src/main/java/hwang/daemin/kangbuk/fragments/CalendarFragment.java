@@ -9,7 +9,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,22 +20,15 @@ import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.MaterialCalendarView;
 import com.prolificinteractive.materialcalendarview.OnDateSelectedListener;
 import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
-
-import org.greenrobot.eventbus.EventBus;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.common.My;
+import hwang.daemin.kangbuk.firebase.FirebaseUtil;
 import hwang.daemin.kangbuk.data.CalendarData;
-import hwang.daemin.kangbuk.event.BackKeyEvent;
 
 
 /**
@@ -60,7 +52,7 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_calendar, container, false);
-        EventBus.getDefault().post(new BackKeyEvent(""));
+        My.INFO.backKeyName ="";
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.nav_calendar));
         calender = (MaterialCalendarView) rootView.findViewById(R.id.calendarView);
         calender.setOnDateChangedListener(this);
@@ -76,23 +68,9 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
         //mLinearLayoutManager.setStackFromEnd(true);
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
         // New child entries
-        mFirebaseDatabaseReference = FirebaseDatabase.getInstance().getReference();
-        Query myTopPostsQuery = mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("starCount");
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<CalendarData,
-                CalendarViewHolder>(
-                CalendarData.class,
-                R.layout.listitem_calendar,
-                CalendarViewHolder.class,
-                mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("day")) {
-            @Override
-            protected void populateViewHolder(CalendarViewHolder viewHolder,
-                                              CalendarData calendarData, int position) {
-                viewHolder.tvDate.setText(calendarData.getMonth() + "." + calendarData.getDay());
-                viewHolder.tvTitle.setText(calendarData.getTitle());
-                bar.setVisibility(ProgressBar.GONE);
-
-            }
-        };
+        mFirebaseDatabaseReference = FirebaseUtil.getDatabaseRef();
+        Query allPostsQuery =mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("day");
+        mFirebaseAdapter = getFirebaseRecyclerAdapter(allPostsQuery);
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
@@ -151,20 +129,8 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
         mSendButton.setText(month + "월" + day + "일 " + "일정추가");
         if (screenMonth != month) {
             screenMonth = month;
-            mFirebaseAdapter = new FirebaseRecyclerAdapter<CalendarData,
-                    CalendarViewHolder>(
-                    CalendarData.class,
-                    R.layout.listitem_calendar,
-                    CalendarViewHolder.class,
-                    mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("day")) {
-                @Override
-                protected void populateViewHolder(CalendarViewHolder viewHolder,
-                                                  CalendarData calendarData, int position) {
-                    viewHolder.tvDate.setText(calendarData.getMonth() + "." + calendarData.getDay());
-                    viewHolder.tvTitle.setText(calendarData.getTitle());
-                    bar.setVisibility(ProgressBar.GONE);
-                }
-            };
+            Query allPostsQuery =mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("day");
+            mFirebaseAdapter = getFirebaseRecyclerAdapter(allPostsQuery);
             mMessageRecyclerView.setAdapter(mFirebaseAdapter);
         }
     }
@@ -177,21 +143,10 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
         day = date.getDay();
         mSendButton.setText(month + "월" + day + "일 " + "일정추가");
         if (screenMonth != month) {
+            ll.setVisibility(View.INVISIBLE);
             screenMonth = month;
-            mFirebaseAdapter = new FirebaseRecyclerAdapter<CalendarData,
-                    CalendarViewHolder>(
-                    CalendarData.class,
-                    R.layout.listitem_calendar,
-                    CalendarViewHolder.class,
-                    mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("day")) {
-                @Override
-                protected void populateViewHolder(CalendarViewHolder viewHolder,
-                                                  CalendarData calendarData, int position) {
-                    viewHolder.tvDate.setText(calendarData.getMonth() + "." + calendarData.getDay());
-                    viewHolder.tvTitle.setText(calendarData.getTitle());
-                    bar.setVisibility(ProgressBar.GONE);
-                }
-            };
+            Query allPostsQuery =mFirebaseDatabaseReference.child(year + "/" + month).orderByChild("day");
+            mFirebaseAdapter = getFirebaseRecyclerAdapter(allPostsQuery);
             mMessageRecyclerView.setAdapter(mFirebaseAdapter);
         }
     }
@@ -205,5 +160,24 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
             tvDate = (TextView) itemView.findViewById(R.id.tvDate);
             tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
         }
+    }
+
+    private FirebaseRecyclerAdapter<CalendarData, CalendarViewHolder> getFirebaseRecyclerAdapter(Query query) {
+        return new FirebaseRecyclerAdapter<CalendarData, CalendarViewHolder>(
+                CalendarData.class, R.layout.listitem_calendar, CalendarViewHolder.class, query) {
+            @Override
+            public void populateViewHolder(final CalendarViewHolder viewHolder,
+                                           final CalendarData calendarData, final int position) {
+                viewHolder.tvDate.setText(calendarData.getMonth() + "." + calendarData.getDay());
+                viewHolder.tvTitle.setText(calendarData.getTitle());
+                bar.setVisibility(ProgressBar.GONE);
+            }
+
+            @Override
+            public void onViewRecycled(CalendarViewHolder holder) {
+                super.onViewRecycled(holder);
+//                FirebaseUtil.getLikesRef().child(holder.mPostKey).removeEventListener(holder.mLikeListener);
+            }
+        };
     }
 }

@@ -18,15 +18,13 @@ import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.common.CustomJSONObjectRequest;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.common.MyVolley;
-import hwang.daemin.kangbuk.event.BackKeyEvent;
-
 
 /**
  * Created by user on 2016-06-14.
@@ -46,12 +44,13 @@ public class ColumnDetailFragment extends Fragment {
     TextView textBible_content;
     WebView webview;
     int num;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootView = inflater.inflate(R.layout.fragment_columndetail,container,false);
-        EventBus.getDefault().post(new BackKeyEvent("ColumnDetailFragment"));
+        My.INFO.backKeyName ="ColumnDetailFragment";
         Bundle extra = getArguments();
         this.num = extra.getInt("num");
         textTitle = (TextView) rootView.findViewById(R.id.title_column_detail);

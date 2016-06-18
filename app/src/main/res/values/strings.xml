@@ -52,4 +52,13 @@
     <string name="invitation_title">강북제일침례교회 초대</string>
     <string name="network_error">네트워크 상태를 확인하세요.\n일부 기능이 실행되지 않을 수 있습니다.</string>
     <string name="backpress">\'뒤로\'버튼을 한번 더 누르시면 종료됩니다.</string>
+
+    <string name="action_add_favourite">Add to Favourites</string>
+    <string name="action_play_next">Play Next</string>
+
+    <string name="user_info_no_name">Unknown user</string>
+    <string name="follow_user_error">Unable to follow user.</string>
+    <string name="post_upload_progress_message">Uploading...</string>
+    <string name="error_user_not_signed_in">로그인이 필요합니다</string>
+    <string name="error_upload_task_create">업로드 할 수 없습니다</string>
 </resources>

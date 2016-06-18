@@ -9,4 +9,12 @@
     <color name="anonymous">#4CAF50</color>
     <color name="grey_100">#F5F5F5</color>
     <color name="grey_300">#E0E0E0</color>
+    <color name="blue_grey_500">#607D8B</color>
+    <color name="blue_grey_600">#546E7A</color>
+    <color name="blue_grey_700">#455A64</color>
+    <color name="blue_grey_800">#37474F</color>
+    <color name="blue_grey_900">#263238</color>
+    <color name="black_overlay">#66000000</color>
+    <color name="user_detail_separator">#3a3a3a</color>
+    <color name="album_title">#4c4c4c</color>
 </resources>

@@ -34,6 +34,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import hwang.daemin.kangbuk.data.User;
+import hwang.daemin.kangbuk.firebase.FirebaseUtil;
 import hwang.daemin.kangbuk.main.MainActivity;
 import hwang.daemin.kangbuk.R;
 
@@ -66,7 +68,7 @@ public class EmailPasswordActivity extends BaseActivity implements
         findViewById(R.id.email_create_account_button).setOnClickListener(this);
 
         // [START initialize_auth]
-        mAuth = FirebaseAuth.getInstance();
+        mAuth = FirebaseUtil.getAuth();
         // [END initialize_auth]
 
         // [START auth_state_listener]
@@ -75,10 +77,10 @@ public class EmailPasswordActivity extends BaseActivity implements
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
+                    // My is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
-                    // User is signed out
+                    // My is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
                 // [START_EXCLUDE]
@@ -138,6 +140,8 @@ public class EmailPasswordActivity extends BaseActivity implements
                                         pref.edit().putString("UserName", UserName).commit();
                                         pref.edit().putInt("loginType",2).commit();
                                         finish();
+                                        FirebaseUser mFirebaseUser = task.getResult().getUser();
+                                        FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                                         Intent i = new Intent(EmailPasswordActivity.this, MainActivity.class);
                                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
