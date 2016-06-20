@@ -55,7 +55,7 @@ repositories {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     facebookCompile 'com.facebook.android:facebook-android-sdk:4.9.0'
     compile 'com.android.support:design:23.4.0'
@@ -72,7 +72,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-appinvite:9.0.2'
     compile 'com.google.firebase:firebase-messaging:9.0.0'
     compile 'com.google.android.gms:play-services-ads:9.0.2'
-    compile 'com.google.firebase:firebase-crash:9.0.0'
     compile 'com.google.firebase:firebase-analytics:9.0.0'
     compile 'com.firebaseui:firebase-ui-database:0.4.0'
     compile 'com.squareup.okhttp:okhttp:1.2.1'
@@ -86,6 +85,7 @@ dependencies {
     compile 'com.navercorp.volleyextensions:volleyer:2.0.1'
     compile 'com.prolificinteractive:material-calendarview:1.4.0'
     compile 'pub.devrel:easypermissions:0.1.7'
+    compile files('src/main/java/libs/YouTubeAndroidPlayerApi.jar')
 }
 apply plugin: 'com.google.gms.google-services'
 

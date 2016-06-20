@@ -35,11 +35,10 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.main.MainActivity;
 import hwang.daemin.kangbuk.R;
@@ -53,7 +52,6 @@ public class SignInActivity extends AppCompatActivity implements
     private GoogleApiClient mGoogleApiClient;
 
     // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,9 +66,6 @@ public class SignInActivity extends AppCompatActivity implements
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
-
-        // Initialize FirebaseAuth
-        mFirebaseAuth = FirebaseUtil.getAuth();
     }
 
     public void mOnClick(View v) {
@@ -111,7 +106,7 @@ public class SignInActivity extends AppCompatActivity implements
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct){
         Log.d(TAG, "firebaseAuthWithGoogle:"+ acct.getId());
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(),null);
-        mFirebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        fUtil.firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG,"signInWithCredential:onComplete:"+task.isSuccessful());
@@ -120,7 +115,7 @@ public class SignInActivity extends AppCompatActivity implements
                     Toast.makeText(SignInActivity.this, getString(R.string.auth_sigin_failed), Toast.LENGTH_SHORT).show();
                 }else{
                     FirebaseUser mFirebaseUser = task.getResult().getUser();
-                    FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                    fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

@@ -19,9 +19,6 @@ package hwang.daemin.kangbuk.main;
 import android.Manifest;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -33,20 +30,19 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.auth.BaseActivity;
 import hwang.daemin.kangbuk.common.GlideUtil;
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.data.User;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.fragments.picture.NewPostUploadTaskFragment;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -58,12 +54,10 @@ public class UserDetailActivity extends BaseActivity implements
     private static final int FULL_SIZE_MAX_DIMENSION = 960;
     private CircleImageView ivProfile;
     private static final int REQUEST_IMAGE_PIC = 1;
-    private static final int REQUEST_IMAGE_CROP = 2;
     private static final int REQUEST_IMAGE_UPLOAD = 3;
     public static final String TAG_TASK_FRAGMENT = "newPostUploadTaskFragment";
-    private String currentUserId;
-    private String mFilePath;
-    private Uri mFileUri = null;
+    private String currentUserId,currentPhotoPath;
+    private Uri mFileUri;
     private Bitmap mResizedBitmap;
     private Bitmap mThumbnail;
     private NewPostUploadTaskFragment mTaskFragment;
@@ -77,15 +71,35 @@ public class UserDetailActivity extends BaseActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_detail);
-        currentUserId = FirebaseUtil.getCurrentUserId();
+        String uId = getIntent().getStringExtra("uId");
+        currentPhotoPath = null;
+        currentUserId = fUtil.getCurrentUserId();
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         final CollapsingToolbarLayout collapsingToolbar =
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        collapsingToolbar.setTitle(FirebaseUtil.getCurrentUserName());
+        collapsingToolbar.setTitle(fUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
-        GlideUtil.loadProfileIcon(FirebaseUtil.getCurrentUser().getPhotoUrl().toString(), ivProfile);
+
+        fUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                        User user = dataSnapshot.getValue(User.class);
+                        GlideUtil.loadProfileIcon(user.getThumbPhotoURL(), ivProfile);
+                        collapsingToolbar.setTitle(user.getuName());
+                }else{
+                    collapsingToolbar.setTitle(fUtil.getCurrentUserName());
+                    ivProfile.setBackgroundResource(R.drawable.ic_account_circle_black_36dp);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         FragmentManager fm = getSupportFragmentManager();
         mTaskFragment = (NewPostUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
@@ -132,9 +146,6 @@ public class UserDetailActivity extends BaseActivity implements
             switch (requestCode) {
                 case REQUEST_IMAGE_PIC:
                     mFileUri = data.getData();
-                case REQUEST_IMAGE_CROP:
-                    cropImage(mFileUri);
-                    break;
                 case REQUEST_IMAGE_UPLOAD:
                     showProgressDialog();
                     mTaskFragment.resizeBitmap(mFileUri, THUMBNAIL_MAX_DIMENSION);
@@ -144,26 +155,8 @@ public class UserDetailActivity extends BaseActivity implements
         }
     }
 
-    private void cropImage(Uri mFileUri) {
-        Intent cropIntent = new Intent("com.android.camera.action.CROP");
-        //indicate image type and Uri of image
-        cropIntent.setDataAndType(mFileUri, "image/*");
-        //set crop properties
-        cropIntent.putExtra("crop", "true");
-        //indicate aspect of desired crop
-        cropIntent.putExtra("aspectX", 1);
-        cropIntent.putExtra("aspectY", 1);
-        //indicate output X and Y
-        cropIntent.putExtra("outputX", 256);
-        cropIntent.putExtra("outputY", 256);
-        //retrieve data on return
-        cropIntent.putExtra("return-data", true);
-        startActivityForResult(cropIntent, REQUEST_IMAGE_UPLOAD);
-
-    }
-
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         // store the data in the fragment
         if (mResizedBitmap != null) {
             mTaskFragment.setSelectedBitmap(mResizedBitmap);
@@ -212,8 +205,8 @@ public class UserDetailActivity extends BaseActivity implements
 
         if (mThumbnail != null && mResizedBitmap != null) {
             ivProfile.setEnabled(true);
-            StorageReference fullSizeRef = FirebaseUtil.getStoreFullProfileRef().child(currentUserId);
-            StorageReference thumbnailRef = FirebaseUtil.getStoreThumbProfileRef().child(currentUserId);
+            StorageReference fullSizeRef = fUtil.getStoreFullProfileRef().child(currentUserId);
+            StorageReference thumbnailRef = fUtil.getStoreThumbProfileRef().child(currentUserId);
             mTaskFragment.uploadPost(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, "profile.jpg","");
         }
     }

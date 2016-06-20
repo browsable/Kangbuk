@@ -17,6 +17,7 @@
 package hwang.daemin.kangbuk.fragments.picture;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -32,33 +33,20 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.crash.FirebaseCrash;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.codehaus.jackson.map.ObjectMapper;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.util.HashMap;
-import java.util.Map;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 public class NewPostUploadTaskFragment extends Fragment {
     private static final String TAG = "NewPostTaskFragment";
@@ -177,9 +165,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                                     final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
-                                    FirebaseUser Fuser = FirebaseUtil.getCurrentUser();
-                                    if (Fuser == null) {
-                                        FirebaseCrash.logcat(Log.ERROR, TAG, "Couldn't upload post: Couldn't get signed in user.");
+                                    if (fUtil.firebaseUser == null) {
                                         mCallbacks.onPostUploaded(mApplicationContext.getString(
                                                 R.string.error_user_not_signed_in));
                                         return;
@@ -188,7 +174,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                                             .setPhotoUri(thumbnailUrl)
                                             .build();
 
-                                    Fuser.updateProfile(profileUpdates)
+                                    fUtil.firebaseUser.updateProfile(profileUpdates)
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
@@ -197,15 +183,14 @@ public class NewPostUploadTaskFragment extends Fragment {
                                                     }
                                                 }
                                             });
-                                    FirebaseUtil.getUserRef().child(Fuser.getUid())
-                                            .setValue(new User(Fuser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
+                                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid())
+                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
                                     mCallbacks.onPostUploaded(null);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
-                            FirebaseCrash.report(e);
+
                             mCallbacks.onPostUploaded(mApplicationContext.getString(
                                     R.string.error_upload_task_create));
                         }
@@ -214,8 +199,8 @@ public class NewPostUploadTaskFragment extends Fragment {
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
-                    FirebaseCrash.report(e);
+                  /*  FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
+                    FirebaseCrash.report(e);*/
                     mCallbacks.onPostUploaded(mApplicationContext.getString(
                             R.string.error_upload_task_create));
                 }
@@ -239,21 +224,22 @@ public class NewPostUploadTaskFragment extends Fragment {
             if (uri != null) {
                 // TODO: Currently making these very small to investigate modulefood bug.
                 // Implement thumbnail + fullsize later.
-                Bitmap bitmap = null;
+                Bitmap adjustedBitmap = null;
                 try {
-                    bitmap = decodeSampledBitmapFromUri(uri, mMaxDimension, mMaxDimension);
-                    Matrix m = new Matrix();
-                    m.setRotate(90, bitmap.getWidth(), bitmap.getHeight());
-                    bitmap = Bitmap.createBitmap(
-                            bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), m, false);
+                    Bitmap bitmap = decodeSampledBitmapFromUri(uri, mMaxDimension, mMaxDimension);
+                    ExifInterface exif= new ExifInterface(getPathFromUri(uri));
+                    int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                    int exifDegree = exifOrientationToDegrees(rotation);
+                    Matrix matrix = new Matrix();
+                    if (rotation != 0f) {matrix.preRotate(exifDegree);}
+                    adjustedBitmap=Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                 } catch (FileNotFoundException e) {
                     Log.e(TAG, "Can't find file to resize: " + e.getMessage());
-                    FirebaseCrash.report(e);
+
                 } catch (IOException e) {
                     Log.e(TAG, "Error occurred during resize: " + e.getMessage());
-                    FirebaseCrash.report(e);
                 }
-                return bitmap;
+                return adjustedBitmap;
             }
             return null;
         }
@@ -262,6 +248,13 @@ public class NewPostUploadTaskFragment extends Fragment {
         protected void onPostExecute(Bitmap bitmap) {
             mCallbacks.onBitmapResized(bitmap, mMaxDimension);
         }
+    }
+    public String getPathFromUri(Uri uri){
+        Cursor cursor = mApplicationContext.getContentResolver().query(uri, null, null, null, null );
+        cursor.moveToNext();
+        String path = cursor.getString( cursor.getColumnIndex( "_data" ) );
+        cursor.close();
+        return path;
     }
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
@@ -302,5 +295,35 @@ public class NewPostUploadTaskFragment extends Fragment {
         // Decode bitmap with inSampleSize set
         stream.reset();
         return BitmapFactory.decodeStream(stream, null, options);
+    }
+
+    private static int exifOrientationToDegrees(int exifOrientation) {
+        if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_90) { return 90; }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {  return 180; }
+        else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {  return 270; }
+        return 0;
+    }
+    public static Bitmap rotate(Bitmap image, int degrees)
+    {
+        if(degrees != 0 && image != null)
+        {
+            Matrix m = new Matrix();
+            m.setRotate(degrees, (float)image.getWidth(), (float)image.getHeight());
+            try
+            {
+                Bitmap b = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), m, true);
+                if(image != b)
+                {
+                    image.recycle();
+                    image = b;
+                }
+                image = b;
+            }
+            catch(OutOfMemoryError ex)
+            {
+                ex.printStackTrace();
+            }
+        }
+        return image;
     }
 }

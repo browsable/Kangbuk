@@ -22,7 +22,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-public class FirebaseUtil {
+public class fUtil {
     public static FirebaseAuth firebaseAuth;
     public static FirebaseUser firebaseUser;
     public static FirebaseDatabase firebaseDatabase;
@@ -40,12 +40,6 @@ public class FirebaseUtil {
         firebaseStorage = FirebaseStorage.getInstance();
         storageReference = firebaseStorage.getReference();
     }
-    public static FirebaseAuth getAuth() {
-        return firebaseAuth;
-    }
-    public static FirebaseUser getCurrentUser() {
-        return firebaseUser;
-    }
     public static String getCurrentUserName() {
         FirebaseUser user = firebaseUser;
         if (user != null) {
@@ -62,9 +56,6 @@ public class FirebaseUtil {
     }
 
     //RealTimeDatabase
-    public static DatabaseReference getDatabaseRef() {
-        return databaseReference;
-    }
     public static DatabaseReference getUserRef() {
         return databaseReference.child("user");
     }

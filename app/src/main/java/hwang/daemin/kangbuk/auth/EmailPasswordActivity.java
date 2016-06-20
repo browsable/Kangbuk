@@ -35,7 +35,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.main.MainActivity;
 import hwang.daemin.kangbuk.R;
 
@@ -45,12 +45,6 @@ public class EmailPasswordActivity extends BaseActivity implements
     private static final String TAG = "EmailPassword";
     private EditText mEmailField;
     private EditText mPasswordField;
-
-    // [START declare_auth]
-    private FirebaseAuth mAuth;
-    // [END declare_auth]
-
-    // [START declare_auth_listener]
     private FirebaseAuth.AuthStateListener mAuthListener;
     // [END declare_auth_listener]
 
@@ -66,10 +60,6 @@ public class EmailPasswordActivity extends BaseActivity implements
         // Buttons
         findViewById(R.id.email_sign_in_button).setOnClickListener(this);
         findViewById(R.id.email_create_account_button).setOnClickListener(this);
-
-        // [START initialize_auth]
-        mAuth = FirebaseUtil.getAuth();
-        // [END initialize_auth]
 
         // [START auth_state_listener]
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -94,7 +84,7 @@ public class EmailPasswordActivity extends BaseActivity implements
     @Override
     public void onStart() {
         super.onStart();
-        mAuth.addAuthStateListener(mAuthListener);
+        fUtil.firebaseAuth.addAuthStateListener(mAuthListener);
     }
     // [END on_start_add_listener]
 
@@ -103,7 +93,7 @@ public class EmailPasswordActivity extends BaseActivity implements
     public void onStop() {
         super.onStop();
         if (mAuthListener != null) {
-            mAuth.removeAuthStateListener(mAuthListener);
+            fUtil.firebaseAuth.removeAuthStateListener(mAuthListener);
         }
     }
     // [END on_stop_remove_listener]
@@ -127,7 +117,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                 if(UserName!=null && !UserName.equals("")) {
                     // [START create_user_with_email]
                     showProgressDialog();
-                    mAuth.createUserWithEmailAndPassword(email, password)
+                    fUtil.firebaseAuth.createUserWithEmailAndPassword(email, password)
                             .addOnCompleteListener(EmailPasswordActivity.this, new OnCompleteListener<AuthResult>() {
                                 @Override
                                 public void onComplete(@NonNull Task<AuthResult> task) {
@@ -141,7 +131,7 @@ public class EmailPasswordActivity extends BaseActivity implements
                                         pref.edit().putInt("loginType",2).commit();
                                         finish();
                                         FirebaseUser mFirebaseUser = task.getResult().getUser();
-                                        FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                                        fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                                         Intent i = new Intent(EmailPasswordActivity.this, MainActivity.class);
                                         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -177,7 +167,7 @@ public class EmailPasswordActivity extends BaseActivity implements
         showProgressDialog();
 
         // [START sign_in_with_email]
-        mAuth.signInWithEmailAndPassword(email, password)
+        fUtil.firebaseAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {

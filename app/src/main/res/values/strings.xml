@@ -8,6 +8,9 @@
     <string name="sign_up">Sign Up</string>
     <string name="nav_home">강북제일침례교회</string>
     <string name="nav_home_eng">HOME</string>
+    <string name="nav_file">자료실</string>
+    <string name="nav_youtube">Youtube</string>
+    <string name="nav_mp3">MP3</string>
     <string name="nav_week">주보</string>
     <string name="nav_week_mid">주일낮예배</string>
     <string name="nav_week_afternoon">주일오후예배</string>
@@ -55,6 +58,7 @@
 
     <string name="action_add_favourite">Add to Favourites</string>
     <string name="action_play_next">Play Next</string>
+    <string name="error_player">There was an error initializing the YouTubePlayer (%1$s)</string>
 
     <string name="user_info_no_name">Unknown user</string>
     <string name="follow_user_error">Unable to follow user.</string>

@@ -22,22 +22,21 @@ import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.SignInActivity;
 import hwang.daemin.kangbuk.common.BackPressCloseHandler;
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
 import hwang.daemin.kangbuk.common.My;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.fragments.BibleFragment;
 import hwang.daemin.kangbuk.fragments.CalendarFragment;
 import hwang.daemin.kangbuk.fragments.ColumnFragment;
 import hwang.daemin.kangbuk.fragments.MainFragment;
-import hwang.daemin.kangbuk.fragments.picture.PictureFragment;
 import hwang.daemin.kangbuk.fragments.PlaceFragment;
 import hwang.daemin.kangbuk.fragments.ScheduleFragment;
+import hwang.daemin.kangbuk.fragments.file.MP3Fragment;
+import hwang.daemin.kangbuk.fragments.file.YoutubeFragment;
+import hwang.daemin.kangbuk.fragments.picture.PictureFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekAfternoonFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekDailyFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekGroupFragment;
@@ -53,10 +52,9 @@ public class MainActivity extends AppCompatActivity
     private static final String TAG = "MainActivity";
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_INVITE = 1;
+    private static final int REQ_START_STANDALONE_PLAYER = 2;
     private BackPressCloseHandler backPressCloseHandler;
     // Firebase instance variables
-    private FirebaseAuth mFirebaseAuth;
-    private FirebaseUser mFirebaseUser;
 
     @Override
     protected void onDestroy() {
@@ -67,27 +65,25 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
-        FirebaseUtil.FirebaseInstanceInit();
-        mFirebaseAuth = FirebaseUtil.getAuth();
-        mFirebaseUser = FirebaseUtil.getCurrentUser();
+        fUtil.FirebaseInstanceInit();
         My.INFO.loginType = pref.getInt("loginType",0);
         My.INFO.backKeyName = "";
-        if(mFirebaseUser==null){
+        if(fUtil.firebaseUser==null){
             // Not signed in, launch the Sign In activity
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
         }else{
             if( My.INFO.loginType==0|| My.INFO.loginType==1) { //google, facebook
-                My.INFO.name = mFirebaseUser.getDisplayName();
+                My.INFO.name = fUtil.firebaseUser.getDisplayName();
             }else if( My.INFO.loginType==2){ //email
                 My.INFO.name = pref.getString("UserName","anonymous");
             }else if( My.INFO.loginType==3){ //anonymous
                 My.INFO.name = ANONYMOUS;
             }
-            My.INFO.id = mFirebaseUser.getUid();
-            if(mFirebaseUser.getPhotoUrl() != null){
-                My.INFO.photoUrl = mFirebaseUser.getPhotoUrl().toString();
+            My.INFO.id = fUtil.firebaseUser.getUid();
+            if(fUtil.firebaseUser.getPhotoUrl() != null){
+                My.INFO.photoUrl = fUtil.firebaseUser.getPhotoUrl().toString();
             }
 
         }
@@ -136,10 +132,12 @@ public class MainActivity extends AppCompatActivity
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_profile:
-                startActivity(new Intent(MainActivity.this, UserDetailActivity.class));
+                Intent i = new Intent(MainActivity.this, UserDetailActivity.class);
+                i.putExtra("uId",fUtil.getCurrentUserId());
+                startActivity(i);
                 return true;
             case R.id.sign_out_menu:
-                mFirebaseAuth.signOut();
+                fUtil.firebaseAuth.signOut();
                 if(My.INFO.loginType==0)
                     Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 else if(My.INFO.loginType==1)
@@ -182,6 +180,12 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_place:
                 fm.beginTransaction().replace(R.id.content_frame,new PlaceFragment()).commit();
+                break;
+            case R.id.nav_youtube:
+                fm.beginTransaction().replace(R.id.content_frame,new YoutubeFragment()).commit();
+                break;
+            case R.id.nav_mp3:
+                fm.beginTransaction().replace(R.id.content_frame,new MP3Fragment()).commit();
                 break;
             case R.id.nav_week_mid:
                 fm.beginTransaction().replace(R.id.content_frame,new WeekMidFragment()).commit();

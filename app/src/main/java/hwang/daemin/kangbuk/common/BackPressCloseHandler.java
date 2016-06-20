@@ -7,6 +7,7 @@ import android.widget.Toast;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.fragments.ColumnFragment;
 import hwang.daemin.kangbuk.fragments.MainFragment;
+import hwang.daemin.kangbuk.fragments.file.YoutubeFragment;
 
 public class BackPressCloseHandler {
     private long backKeyPressedTime = 0;
@@ -32,6 +33,9 @@ public class BackPressCloseHandler {
                 break;
             case "ColumnDetailFragment":
                 fm.beginTransaction().replace(R.id.content_frame,new ColumnFragment()).commit();
+                break;
+            case "YoutubeFragment":
+                fm.beginTransaction().replace(R.id.content_frame,new YoutubeFragment()).commit();
                 break;
             default:
                 fm.beginTransaction().replace(R.id.content_frame,new MainFragment()).commit();

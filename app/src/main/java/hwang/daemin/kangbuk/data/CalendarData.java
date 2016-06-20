@@ -8,15 +8,17 @@ public class CalendarData {
     private int month;
     private int day;
     private String title;
+    private String uId;
 
     public CalendarData() {
     }
 
-    public CalendarData(int year, int month, int day, String title) {
+    public CalendarData(int year, int month, int day, String title, String uId) {
         this.year = year;
         this.month = month;
         this.day = day;
         this.title = title;
+        this.uId = uId;
     }
 
     public int getYear() {
@@ -49,5 +51,13 @@ public class CalendarData {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getuId() {
+        return uId;
+    }
+
+    public void setuId(String uId) {
+        this.uId = uId;
     }
 }

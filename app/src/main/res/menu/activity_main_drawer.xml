@@ -24,8 +24,8 @@
         <item
             android:id="@+id/nav_place"
             android:title="@string/nav_place" />
-    </group>
 
+    </group>
     <item android:title="@string/nav_week">
         <menu>
             <item
@@ -52,6 +52,16 @@
             <item
                 android:id="@+id/nav_week_notice"
                 android:title="@string/nav_week_notice" />
+        </menu>
+    </item>
+    <item android:title="@string/nav_file">
+        <menu>
+            <item
+                android:id="@+id/nav_youtube"
+                android:title="@string/nav_youtube" />
+            <item
+                android:id="@+id/nav_mp3"
+                android:title="@string/nav_mp3" />
         </menu>
     </item>
 </menu>

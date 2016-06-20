@@ -32,7 +32,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.main.MainActivity;
 
 /**
@@ -58,7 +58,7 @@ public class AnonymousAuthActivity extends BaseActivity implements
         setContentView(R.layout.activity_anonymous_auth);
 
         // [START initialize_auth]
-        mAuth = FirebaseUtil.getAuth();
+        mAuth = fUtil.firebaseAuth;
         // [END initialize_auth]
 
         // [START auth_state_listener]
@@ -125,7 +125,7 @@ public class AnonymousAuthActivity extends BaseActivity implements
                             pref.edit().putInt("loginType",3).commit();
                             finish();
                             FirebaseUser mFirebaseUser = task.getResult().getUser();
-                            FirebaseUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                             Intent i = new Intent(AnonymousAuthActivity.this, MainActivity.class);
                             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

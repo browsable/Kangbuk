@@ -4,8 +4,6 @@ import android.app.Application;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
-
 /**
  * Created by hernia on 2015-06-13.
  */

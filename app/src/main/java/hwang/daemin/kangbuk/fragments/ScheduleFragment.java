@@ -18,17 +18,17 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.adapter.ScheduleAdapter;
-import hwang.daemin.kangbuk.common.My;
-import hwang.daemin.kangbuk.firebase.FirebaseUtil;
 import hwang.daemin.kangbuk.common.GridSpacingItemDecoration;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.ScheduleData;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 
 /**
@@ -39,7 +39,6 @@ public class ScheduleFragment extends Fragment{
     private RecyclerView recyclerView;
     private ScheduleAdapter adapter;
     private List<ScheduleData> scheduleList;
-    private FirebaseRemoteConfig mFirebaseRemoteConfig;
     private ProgressBar bar;
 
     @Nullable
@@ -60,16 +59,12 @@ public class ScheduleFragment extends Fragment{
         recyclerView.addItemDecoration(new GridSpacingItemDecoration(2, dpToPx(10), true));
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(adapter);
-
-        // Initialize Firebase Remote Config.
-        mFirebaseRemoteConfig = FirebaseUtil.getRemoteConfig();
-        // Define Firebase Remote Config Settings.
         FirebaseRemoteConfigSettings firebaseRemoteConfigSettings =
                 new FirebaseRemoteConfigSettings.Builder()
                         .setDeveloperModeEnabled(true)
                         .build();
 
-        mFirebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
+        fUtil.firebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
         // Fetch remote config.
         fetchConfig();
         return rootView;
@@ -87,17 +82,17 @@ public class ScheduleFragment extends Fragment{
         // If developer mode is enabled reduce cacheExpiration to 0 so that
         // each fetch goes to the server. This should not be used in release
         // builds.
-        if (mFirebaseRemoteConfig.getInfo().getConfigSettings()
+        if (fUtil.firebaseRemoteConfig.getInfo().getConfigSettings()
                 .isDeveloperModeEnabled()) {
             cacheExpiration = 0;
         }
-        mFirebaseRemoteConfig.fetch(cacheExpiration)
+        fUtil.firebaseRemoteConfig.fetch(cacheExpiration)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         // Make the fetched config available via
                         // FirebaseRemoteConfig get<type> calls.
-                        mFirebaseRemoteConfig.activateFetched();
+                        fUtil.firebaseRemoteConfig.activateFetched();
                         updateSchedule();
                     }
                 })
@@ -117,16 +112,16 @@ public class ScheduleFragment extends Fragment{
      * values.
      */
     private void updateSchedule() {
-        String dawn = mFirebaseRemoteConfig.getString("dawn");
-        String mid = mFirebaseRemoteConfig.getString("mid");
-        String after = mFirebaseRemoteConfig.getString("after");
-        String wed = mFirebaseRemoteConfig.getString("wed");
-        String child = mFirebaseRemoteConfig.getString("child");
-        String middlehigh = mFirebaseRemoteConfig.getString("middlehigh");
-        String univ = mFirebaseRemoteConfig.getString("univ");
-        String newFa = mFirebaseRemoteConfig.getString("newFa");
-        String leader = mFirebaseRemoteConfig.getString("leader");
-        String fri = mFirebaseRemoteConfig.getString("fri");
+        String dawn = fUtil.firebaseRemoteConfig.getString("dawn");
+        String mid = fUtil.firebaseRemoteConfig.getString("mid");
+        String after = fUtil.firebaseRemoteConfig.getString("after");
+        String wed = fUtil.firebaseRemoteConfig.getString("wed");
+        String child = fUtil.firebaseRemoteConfig.getString("child");
+        String middlehigh = fUtil.firebaseRemoteConfig.getString("middlehigh");
+        String univ = fUtil.firebaseRemoteConfig.getString("univ");
+        String newFa = fUtil.firebaseRemoteConfig.getString("newFa");
+        String leader = fUtil.firebaseRemoteConfig.getString("leader");
+        String fri = fUtil.firebaseRemoteConfig.getString("fri");
         scheduleList.add(new ScheduleData("새벽기도회",dawn));
         scheduleList.add(new ScheduleData("주일낮예배",mid));
         scheduleList.add(new ScheduleData("주일오후예배",after));
