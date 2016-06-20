@@ -35,7 +35,7 @@ import hwang.daemin.kangbuk.fragments.MainFragment;
 import hwang.daemin.kangbuk.fragments.PlaceFragment;
 import hwang.daemin.kangbuk.fragments.ScheduleFragment;
 import hwang.daemin.kangbuk.fragments.file.MP3Fragment;
-import hwang.daemin.kangbuk.fragments.file.YoutubeFragment;
+import hwang.daemin.kangbuk.fragments.file.YoutubeActivity;
 import hwang.daemin.kangbuk.fragments.picture.PictureFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekAfternoonFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekDailyFragment;
@@ -182,7 +182,8 @@ public class MainActivity extends AppCompatActivity
                 fm.beginTransaction().replace(R.id.content_frame,new PlaceFragment()).commit();
                 break;
             case R.id.nav_youtube:
-                fm.beginTransaction().replace(R.id.content_frame,new YoutubeFragment()).commit();
+                startActivity(new Intent(this, YoutubeActivity.class));
+                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 break;
             case R.id.nav_mp3:
                 fm.beginTransaction().replace(R.id.content_frame,new MP3Fragment()).commit();
