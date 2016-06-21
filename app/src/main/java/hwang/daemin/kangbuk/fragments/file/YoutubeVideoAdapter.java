@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.firebase.fUtil;
 
 /**
@@ -55,7 +56,6 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeVideoAdapte
     @Override
     public void onBindViewHolder(final YoutubeVideoViewHolder holder, final int position) {
         final YoutubeVideo youtubeVideo = mYoutubeVideos.get(position);
-
         YouTubeThumbnailView videoThumb = holder.youTubeThumbnailView;
         YouTubeThumbnailLoader loader = mThumbnailViewToLoaderMap.get(videoThumb);
         if (loader == null) {
@@ -73,41 +73,6 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeVideoAdapte
                 openYoutubePlayer(youtubeVideo);
             }
         });
-        if(fUtil.getCurrentUserId().equals(youtubeVideo.getuId())) {
-            holder.btRemove.setVisibility(View.VISIBLE);
-            holder.btRemove.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    fUtil.databaseReference.orderByChild("uId").equalTo(youtubeVideo.getuId()).addChildEventListener(new ChildEventListener() {
-                        @Override
-                        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                            Log.i("test","onChildAdded");
-                            fUtil.databaseReference.child("youtube").child(dataSnapshot.getKey()).removeValue();
-                        }
-
-                        @Override
-                        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                            Log.i("test","onChildChanged");
-                        }
-
-                        @Override
-                        public void onChildRemoved(DataSnapshot dataSnapshot) {
-                            Log.i("test","onChildRemoved");
-                        }
-
-                        @Override
-                        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                            Log.i("test","onChildMoved");
-                        }
-
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
-                            Log.i("test","onCancelled");
-                        }
-                    });
-                }
-            });
-        }
     }
 
     public void releaseLoaders() {
@@ -216,7 +181,9 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeVideoAdapte
             view.setImageResource(R.drawable.no_thumbnail);
         }
     }
-
+    private interface RemoveButtonClickListener {
+        void onClick(View view, int position);
+    }
     private interface ItemClickListener {
         void onClick(View view, int position);
     }

@@ -43,8 +43,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".fragments.file.YoutubeActivity"/>
-        <activity
             android:name=".main.UserDetailActivity"
             android:theme="@style/AppTheme.NoActionBar">
         </activity>

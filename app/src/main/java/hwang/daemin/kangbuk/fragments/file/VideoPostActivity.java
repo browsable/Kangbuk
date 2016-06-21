@@ -30,6 +30,7 @@ import hwang.daemin.kangbuk.common.CustomJSONObjectRequest;
 import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.common.MyVolley;
+import hwang.daemin.kangbuk.main.MainActivity;
 
 /**
  * Created by user on 2016-06-11.
@@ -80,9 +81,8 @@ public class VideoPostActivity extends AppCompatActivity {
                     uId = auth.getCurrentUser().getUid();
                     YoutubeVideo yv = new YoutubeVideo(videoId, etTitle.getText().toString(), uId);
                     Ref.child("youtube").push().setValue(yv);
-                    Intent i = new Intent(VideoPostActivity.this, YoutubeActivity.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    finish();
+                    Intent i = new Intent(VideoPostActivity.this, MainActivity.class);
                     startActivity(i);
                     overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 }

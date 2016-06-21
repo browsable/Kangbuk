@@ -34,7 +34,7 @@ import hwang.daemin.kangbuk.fragments.ColumnFragment;
 import hwang.daemin.kangbuk.fragments.MainFragment;
 import hwang.daemin.kangbuk.fragments.PlaceFragment;
 import hwang.daemin.kangbuk.fragments.ScheduleFragment;
-import hwang.daemin.kangbuk.fragments.file.YoutubeActivity;
+import hwang.daemin.kangbuk.fragments.file.YoutubeFragment;
 import hwang.daemin.kangbuk.fragments.picture.PictureFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekAfternoonFragment;
 import hwang.daemin.kangbuk.fragments.week.WeekDailyFragment;
@@ -66,7 +66,6 @@ public class MainActivity extends AppCompatActivity
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
         fUtil.FirebaseInstanceInit();
         My.INFO.loginType = pref.getInt("loginType",0);
-        My.INFO.backKeyName = "MainActivity";
         if(fUtil.firebaseUser==null){
             // Not signed in, launch the Sign In activity
             startActivity(new Intent(this, SignInActivity.class));
@@ -160,6 +159,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         switch (item.getItemId()){
             case R.id.nav_home:
+                My.INFO.backKeyName ="MainFragment";
                 fm.beginTransaction().replace(R.id.content_frame,new MainFragment()).commit();
                 break;
             case R.id.nav_bible:
@@ -181,8 +181,7 @@ public class MainActivity extends AppCompatActivity
                 fm.beginTransaction().replace(R.id.content_frame,new PlaceFragment()).commit();
                 break;
             case R.id.nav_youtube:
-                startActivity(new Intent(this, YoutubeActivity.class));
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                fm.beginTransaction().replace(R.id.content_frame,new YoutubeFragment()).commit();
                 break;
             case R.id.nav_week_mid:
                 fm.beginTransaction().replace(R.id.content_frame,new WeekMidFragment()).commit();
