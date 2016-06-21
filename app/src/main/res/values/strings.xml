@@ -10,7 +10,6 @@
     <string name="nav_home_eng">HOME</string>
     <string name="nav_file">자료실</string>
     <string name="nav_youtube">Youtube</string>
-    <string name="nav_mp3">MP3</string>
     <string name="nav_week">주보</string>
     <string name="nav_week_mid">주일낮예배</string>
     <string name="nav_week_afternoon">주일오후예배</string>
@@ -65,4 +64,8 @@
     <string name="post_upload_progress_message">Uploading...</string>
     <string name="error_user_not_signed_in">로그인이 필요합니다</string>
     <string name="error_upload_task_create">업로드 할 수 없습니다</string>
+    <string name="start">GOT IT</string>
+    <string name="next">NEXT</string>
+    <string name="mp3Info"><a href="https://support.google.com/youtube/answer/1696878?topic=2888648&amp;#x26;%38hl=ko">MP3 변환 방법 보러가기</a></string>
+
 </resources>

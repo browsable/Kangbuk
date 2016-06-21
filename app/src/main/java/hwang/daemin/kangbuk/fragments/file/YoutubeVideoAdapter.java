@@ -5,10 +5,12 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -16,11 +18,15 @@ import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeStandalonePlayer;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 /**
  * @author msahakyan
@@ -59,7 +65,7 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeVideoAdapte
             videoThumb.setImageResource(R.drawable.loading_thumbnail);
             loader.setVideo(youtubeVideo.getVideoId());
         }
-        holder.youtubeVideoTitle.setText(youtubeVideo.getName());
+        holder.youtubeVideoTitle.setText(youtubeVideo.getTitle());
 
         holder.setClickListener(new ItemClickListener() {
             @Override
@@ -67,6 +73,41 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeVideoAdapte
                 openYoutubePlayer(youtubeVideo);
             }
         });
+        if(fUtil.getCurrentUserId().equals(youtubeVideo.getuId())) {
+            holder.btRemove.setVisibility(View.VISIBLE);
+            holder.btRemove.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fUtil.databaseReference.orderByChild("uId").equalTo(youtubeVideo.getuId()).addChildEventListener(new ChildEventListener() {
+                        @Override
+                        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                            Log.i("test","onChildAdded");
+                            fUtil.databaseReference.child("youtube").child(dataSnapshot.getKey()).removeValue();
+                        }
+
+                        @Override
+                        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                            Log.i("test","onChildChanged");
+                        }
+
+                        @Override
+                        public void onChildRemoved(DataSnapshot dataSnapshot) {
+                            Log.i("test","onChildRemoved");
+                        }
+
+                        @Override
+                        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                            Log.i("test","onChildMoved");
+                        }
+
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+                            Log.i("test","onCancelled");
+                        }
+                    });
+                }
+            });
+        }
     }
 
     public void releaseLoaders() {
@@ -100,11 +141,13 @@ public class YoutubeVideoAdapter extends RecyclerView.Adapter<YoutubeVideoAdapte
         YouTubeThumbnailView youTubeThumbnailView;
         TextView youtubeVideoTitle;
         ImageView youtubeVideoPlayBtn;
+        Button btRemove;
         YoutubeVideoViewHolder(View view) {
             super(view);
             youTubeThumbnailView = (YouTubeThumbnailView) view.findViewById(R.id.youtube_thumbnail_view);
             youtubeVideoTitle = (TextView) view.findViewById(R.id.youtube_video_title);
             youtubeVideoPlayBtn = (ImageView) view.findViewById(R.id.video_play_button);
+            btRemove = (Button) view.findViewById(R.id.btRemove);
             view.setOnTouchListener(this);
             view.setOnClickListener(this);
         }

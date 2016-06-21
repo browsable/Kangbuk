@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_margin="@dimen/margin_default"
+    >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_xxxxl"
+        android:layout_marginBottom="@dimen/margin_xl"
+        android:text="Youtube 영상 공유하기"
+        android:textStyle="bold"
+        android:gravity="center"
+        />
+    <ImageView
+        android:layout_width="200dp"
+        android:layout_height="300dp"
+        android:background="@drawable/youtubeinfo1"
+        android:layout_gravity="center"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2.1"
+        android:text="Step 1"
+        android:textStyle="bold"
+        android:gravity="center_horizontal|bottom"
+        android:paddingBottom="@dimen/margin_default"
+        />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:text="Youtube 앱을 실행합니다"
+        android:gravity="center_horizontal|top"
+        />
+</LinearLayout>

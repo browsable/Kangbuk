@@ -31,7 +31,10 @@
         <activity android:name=".auth.EmailPasswordActivity" />
         <activity android:name=".auth.FacebookLoginActivity" />
         <activity
-            android:name=".fragments.file.YoutubeActivity">
+            android:name=".fragments.file.YoutubeInfoActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".fragments.file.VideoPostActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -39,6 +42,8 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".fragments.file.YoutubeActivity"/>
         <activity
             android:name=".main.UserDetailActivity"
             android:theme="@style/AppTheme.NoActionBar">
@@ -71,7 +76,11 @@
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
             </intent-filter>
-        </service>
+        </service><!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+     App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
     </application>
 
     <uses-permission android:name="android.permission.INTERNET" />

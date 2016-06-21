@@ -59,9 +59,6 @@
             <item
                 android:id="@+id/nav_youtube"
                 android:title="@string/nav_youtube" />
-            <item
-                android:id="@+id/nav_mp3"
-                android:title="@string/nav_mp3" />
         </menu>
     </item>
 </menu>

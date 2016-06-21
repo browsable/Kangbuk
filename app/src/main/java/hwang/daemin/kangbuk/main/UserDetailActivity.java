@@ -82,24 +82,26 @@ public class UserDetailActivity extends BaseActivity implements
         collapsingToolbar.setTitle(fUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
 
-        fUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if(dataSnapshot.exists()){
+        try {
+            fUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (dataSnapshot.exists()) {
                         User user = dataSnapshot.getValue(User.class);
                         GlideUtil.loadProfileIcon(user.getThumbPhotoURL(), ivProfile);
                         collapsingToolbar.setTitle(user.getuName());
-                }else{
-                    collapsingToolbar.setTitle(fUtil.getCurrentUserName());
-                    ivProfile.setBackgroundResource(R.drawable.ic_account_circle_black_36dp);
+                    } else {
+                        collapsingToolbar.setTitle(fUtil.getCurrentUserName());
+                        ivProfile.setBackgroundResource(R.drawable.ic_account_circle_black_36dp);
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }catch (Exception e){}
 
         FragmentManager fm = getSupportFragmentManager();
         mTaskFragment = (NewPostUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);

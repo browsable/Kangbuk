@@ -86,6 +86,7 @@ dependencies {
     compile 'com.prolificinteractive:material-calendarview:1.4.0'
     compile 'pub.devrel:easypermissions:0.1.7'
     compile files('src/main/java/libs/YouTubeAndroidPlayerApi.jar')
+    compile 'com.google.android.gms:play-services-appindexing:9.0.2'
 }
 apply plugin: 'com.google.gms.google-services'
 

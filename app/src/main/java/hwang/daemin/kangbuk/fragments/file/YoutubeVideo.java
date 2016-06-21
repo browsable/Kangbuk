@@ -12,16 +12,20 @@ import android.os.Parcelable;
 public class YoutubeVideo implements Parcelable {
 
     private String videoId;
-    private String name;
+    private String title;
+    private String uId;
 
-    public YoutubeVideo(String videoId, String name) {
+    public YoutubeVideo(String videoId, String title, String uId) {
         this.videoId = videoId;
-        this.name = name;
+        this.title = title;
+        this.uId = uId;
     }
 
     private YoutubeVideo(Parcel in) {
         videoId = in.readString();
-        name = in.readString();
+        title = in.readString();
+    }
+    private YoutubeVideo() {
     }
 
     public static final Creator<YoutubeVideo> CREATOR = new Creator<YoutubeVideo>() {
@@ -36,12 +40,28 @@ public class YoutubeVideo implements Parcelable {
         }
     };
 
+    public String getuId() {
+        return uId;
+    }
+
+    public void setuId(String uId) {
+        this.uId = uId;
+    }
+
+    public void setVideoId(String videoId) {
+        this.videoId = videoId;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
     public String getVideoId() {
         return videoId;
     }
 
-    public String getName() {
-        return name;
+    public String getTitle() {
+        return title;
     }
 
     @Override
@@ -52,6 +72,6 @@ public class YoutubeVideo implements Parcelable {
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(videoId);
-        dest.writeString(name);
+        dest.writeString(title);
     }
 }
