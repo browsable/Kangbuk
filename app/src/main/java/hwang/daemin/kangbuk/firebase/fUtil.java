@@ -22,7 +22,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
-public class fUtil {
+public class FUtil {
     public static FirebaseAuth firebaseAuth;
     public static FirebaseUser firebaseUser;
     public static FirebaseDatabase firebaseDatabase;
@@ -59,6 +59,12 @@ public class fUtil {
     public static DatabaseReference getUserRef() {
         return databaseReference.child("user");
     }
+    public static DatabaseReference getPictureRef() {
+        return databaseReference.child("picture");
+    }
+    public static DatabaseReference getPictureDetailRef() {
+        return databaseReference.child("picture-fullurls");
+    }
 
     //Remote Config
     public static FirebaseRemoteConfig getRemoteConfig() {
@@ -66,6 +72,9 @@ public class fUtil {
     }
 
     //Storage
+    public static StorageReference getStoreGalleryRef() {
+        return storageReference.child("photo/gallery/");
+    }
     public static StorageReference getStoreFullProfileRef() {
         return storageReference.child("photo/profile/full");
     }

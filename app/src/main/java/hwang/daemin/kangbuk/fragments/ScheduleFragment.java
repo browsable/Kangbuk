@@ -28,7 +28,7 @@ import hwang.daemin.kangbuk.adapter.ScheduleAdapter;
 import hwang.daemin.kangbuk.common.GridSpacingItemDecoration;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.ScheduleData;
-import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.firebase.FUtil;
 
 
 /**
@@ -64,7 +64,7 @@ public class ScheduleFragment extends Fragment{
                         .setDeveloperModeEnabled(true)
                         .build();
 
-        fUtil.firebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
+        FUtil.firebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
         // Fetch remote config.
         fetchConfig();
         return rootView;
@@ -82,17 +82,17 @@ public class ScheduleFragment extends Fragment{
         // If developer mode is enabled reduce cacheExpiration to 0 so that
         // each fetch goes to the server. This should not be used in release
         // builds.
-        if (fUtil.firebaseRemoteConfig.getInfo().getConfigSettings()
+        if (FUtil.firebaseRemoteConfig.getInfo().getConfigSettings()
                 .isDeveloperModeEnabled()) {
             cacheExpiration = 0;
         }
-        fUtil.firebaseRemoteConfig.fetch(cacheExpiration)
+        FUtil.firebaseRemoteConfig.fetch(cacheExpiration)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
                         // Make the fetched config available via
                         // FirebaseRemoteConfig get<type> calls.
-                        fUtil.firebaseRemoteConfig.activateFetched();
+                        FUtil.firebaseRemoteConfig.activateFetched();
                         updateSchedule();
                     }
                 })
@@ -112,16 +112,16 @@ public class ScheduleFragment extends Fragment{
      * values.
      */
     private void updateSchedule() {
-        String dawn = fUtil.firebaseRemoteConfig.getString("dawn");
-        String mid = fUtil.firebaseRemoteConfig.getString("mid");
-        String after = fUtil.firebaseRemoteConfig.getString("after");
-        String wed = fUtil.firebaseRemoteConfig.getString("wed");
-        String child = fUtil.firebaseRemoteConfig.getString("child");
-        String middlehigh = fUtil.firebaseRemoteConfig.getString("middlehigh");
-        String univ = fUtil.firebaseRemoteConfig.getString("univ");
-        String newFa = fUtil.firebaseRemoteConfig.getString("newFa");
-        String leader = fUtil.firebaseRemoteConfig.getString("leader");
-        String fri = fUtil.firebaseRemoteConfig.getString("fri");
+        String dawn = FUtil.firebaseRemoteConfig.getString("dawn");
+        String mid = FUtil.firebaseRemoteConfig.getString("mid");
+        String after = FUtil.firebaseRemoteConfig.getString("after");
+        String wed = FUtil.firebaseRemoteConfig.getString("wed");
+        String child = FUtil.firebaseRemoteConfig.getString("child");
+        String middlehigh = FUtil.firebaseRemoteConfig.getString("middlehigh");
+        String univ = FUtil.firebaseRemoteConfig.getString("univ");
+        String newFa = FUtil.firebaseRemoteConfig.getString("newFa");
+        String leader = FUtil.firebaseRemoteConfig.getString("leader");
+        String fri = FUtil.firebaseRemoteConfig.getString("fri");
         scheduleList.add(new ScheduleData("새벽기도회",dawn));
         scheduleList.add(new ScheduleData("주일낮예배",mid));
         scheduleList.add(new ScheduleData("주일오후예배",after));

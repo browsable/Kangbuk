@@ -45,22 +45,24 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.data.PictureData;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.firebase.FUtil;
 
 public class NewPostUploadTaskFragment extends Fragment {
     private static final String TAG = "NewPostTaskFragment";
 
     public interface TaskCallbacks {
         void onBitmapResized(Bitmap resizedBitmap, int mMaxDimension);
-
-        void onPostUploaded(String error);
+        void onProfileUploaded(String error);
+        void onPictureUploaded(String error, String fullURL, String thumbURL);
     }
 
     private Context mApplicationContext;
     private TaskCallbacks mCallbacks;
     private Bitmap selectedBitmap;
     private Bitmap thumbnail;
+    private boolean firstFlag;
 
     public NewPostUploadTaskFragment() {
         // Required empty public constructor
@@ -87,6 +89,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                     + " must implement TaskCallbacks");
         }
         mApplicationContext = context.getApplicationContext();
+        firstFlag =true;
     }
 
     @Override
@@ -117,23 +120,25 @@ public class NewPostUploadTaskFragment extends Fragment {
     }
 
     public void uploadPost(Bitmap bitmap, StorageReference inBitmapRef, Bitmap thumbnail, StorageReference inThumbnailRef,
-                           String inFileName, String inPostText) {
-        UploadPostTask uploadTask = new UploadPostTask(bitmap, inBitmapRef, thumbnail, inThumbnailRef, inFileName, inPostText);
+                           String inFileName) {
+        UploadPostTask uploadTask = new UploadPostTask(bitmap, inBitmapRef, thumbnail, inThumbnailRef, inFileName);
         uploadTask.execute();
     }
-
+    public void uploadProfile(Bitmap bitmap, StorageReference inBitmapRef, Bitmap thumbnail, StorageReference inThumbnailRef,
+                           String inFileName) {
+        UploadProfileTask uploadTask = new UploadProfileTask(bitmap, inBitmapRef, thumbnail, inThumbnailRef, inFileName);
+        uploadTask.execute();
+    }
     class UploadPostTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<Bitmap> bitmapReference;
         private WeakReference<Bitmap> thumbnailReference;
-        private String postText;
         private StorageReference fullSizeRef;
         private StorageReference thumbnailRef;
 
         public UploadPostTask(Bitmap bitmap, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef,
-                              String inFileName, String inPostText) {
+                              String inFileName) {
             bitmapReference = new WeakReference<>(bitmap);
             thumbnailReference = new WeakReference<>(thumbnail);
-            postText = inPostText;
             fullSizeRef = fullRef.child(inFileName);
             thumbnailRef = thumbRef.child(inFileName);
         }
@@ -165,8 +170,82 @@ public class NewPostUploadTaskFragment extends Fragment {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                                     final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
-                                    if (fUtil.firebaseUser == null) {
-                                        mCallbacks.onPostUploaded(mApplicationContext.getString(
+                                    if (FUtil.firebaseUser == null) {
+                                        mCallbacks.onPictureUploaded(mApplicationContext.getString(
+                                                R.string.error_user_not_signed_in),null,null);
+                                        return;
+                                    }
+                                    if(firstFlag){
+                                        mCallbacks.onPictureUploaded(null,fullSizeUrl.toString(),thumbnailUrl.toString());
+                                        firstFlag = false;
+                                    }else mCallbacks.onPictureUploaded(null,fullSizeUrl.toString(),null);
+
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+
+                            mCallbacks.onPictureUploaded(mApplicationContext.getString(
+                                    R.string.error_upload_task_create),null,null);
+                        }
+                    });
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                  /*  FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
+                    FirebaseCrash.report(e);*/
+                    mCallbacks.onPictureUploaded(mApplicationContext.getString(
+                            R.string.error_upload_task_create),null,null);
+                }
+            });
+            // TODO: Refactor these insanely nested callbacks.
+            return null;
+        }
+    }
+    class UploadProfileTask extends AsyncTask<Void, Void, Void> {
+        private WeakReference<Bitmap> bitmapReference;
+        private WeakReference<Bitmap> thumbnailReference;
+        private StorageReference fullSizeRef;
+        private StorageReference thumbnailRef;
+
+        public UploadProfileTask(Bitmap bitmap, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef,
+                              String inFileName) {
+            bitmapReference = new WeakReference<>(bitmap);
+            thumbnailReference = new WeakReference<>(thumbnail);
+            fullSizeRef = fullRef.child(inFileName);
+            thumbnailRef = thumbRef.child(inFileName);
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Bitmap fullSize = bitmapReference.get();
+            final Bitmap thumbnail = thumbnailReference.get();
+            if (fullSize == null || thumbnail == null) {
+                return null;
+            }
+            ByteArrayOutputStream fullSizeStream = new ByteArrayOutputStream();
+            fullSize.compress(Bitmap.CompressFormat.JPEG, 90, fullSizeStream);
+            byte[] bytes = fullSizeStream.toByteArray();
+            fullSizeRef.putBytes(bytes).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    final Uri fullSizeUrl = taskSnapshot.getDownloadUrl();
+                    ByteArrayOutputStream thumbnailStream = new ByteArrayOutputStream();
+                    thumbnail.compress(Bitmap.CompressFormat.JPEG, 70, thumbnailStream);
+                    thumbnailRef.putBytes(thumbnailStream.toByteArray())
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                                    final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
+                                    if (FUtil.firebaseUser == null) {
+                                        mCallbacks.onProfileUploaded(mApplicationContext.getString(
                                                 R.string.error_user_not_signed_in));
                                         return;
                                     }
@@ -174,7 +253,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                                             .setPhotoUri(thumbnailUrl)
                                             .build();
 
-                                    fUtil.firebaseUser.updateProfile(profileUpdates)
+                                    FUtil.firebaseUser.updateProfile(profileUpdates)
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
@@ -183,15 +262,15 @@ public class NewPostUploadTaskFragment extends Fragment {
                                                     }
                                                 }
                                             });
-                                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid())
-                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
-                                    mCallbacks.onPostUploaded(null);
+                                    FUtil.getUserRef().child(FUtil.firebaseUser.getUid())
+                                            .setValue(new User(FUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
+                                    mCallbacks.onProfileUploaded(null);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
 
-                            mCallbacks.onPostUploaded(mApplicationContext.getString(
+                            mCallbacks.onProfileUploaded(mApplicationContext.getString(
                                     R.string.error_upload_task_create));
                         }
                     });
@@ -201,7 +280,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                 public void onFailure(@NonNull Exception e) {
                   /*  FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
                     FirebaseCrash.report(e);*/
-                    mCallbacks.onPostUploaded(mApplicationContext.getString(
+                    mCallbacks.onProfileUploaded(mApplicationContext.getString(
                             R.string.error_upload_task_create));
                 }
             });

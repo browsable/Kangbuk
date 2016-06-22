@@ -14,69 +14,54 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.bumptech.glide.Glide;
 
 import java.util.List;
 
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.data.Post;
+import hwang.daemin.kangbuk.data.PictureData;
 
 /**
  * Created by Ravi Tamada on 18/05/16.
  */
-public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.MyViewHolder> {
+public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.PictureViewHolder> {
 
     private Context mContext;
-    private List<Post> picList;
+    private List<PictureData> picList;
 
-    public class MyViewHolder extends RecyclerView.ViewHolder {
-        public TextView title, count;
-        public ImageView thumbnail, overflow;
+    public class PictureViewHolder extends RecyclerView.ViewHolder {
+        public TextView tvTitle;
+        public TextView tvName;
+        public ImageView ivThumb;
+        public ImageView ivOverflow;
 
-        public MyViewHolder(View view) {
-            super(view);
-            title = (TextView) view.findViewById(R.id.title);
-            count = (TextView) view.findViewById(R.id.count);
-            thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-            overflow = (ImageView) view.findViewById(R.id.overflow);
+        public PictureViewHolder(View itemView) {
+            super(itemView);
+            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
+            tvName = (TextView) itemView.findViewById(R.id.tvName);
+            ivThumb = (ImageView) itemView.findViewById(R.id.ivThumb);
+            ivOverflow = (ImageView) itemView.findViewById(R.id.ivOverflow);
         }
     }
 
 
-    public PictureAdapter(Context mContext, List<Post> picList) {
+    public PictureAdapter(Context mContext, List<PictureData> picList) {
         this.mContext = mContext;
         this.picList = picList;
     }
 
     @Override
-    public MyViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public PictureViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.listitem_picture, parent, false);
-
-        return new MyViewHolder(itemView);
+                .inflate(R.layout.listitem_column, parent, false);
+        return new PictureViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(final MyViewHolder holder, int position) {
-        Post post = picList.get(position);
-        holder.title.setText(post.getText());
-
-        // loading album cover using Glide library
-        Glide.with(mContext).load(post.getThumb_url()).into(holder.thumbnail);
-
-        holder.overflow.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showPopupMenu(holder.overflow);
-            }
-        });
+    public void onBindViewHolder(final PictureViewHolder holder, int position) {
+        PictureData pic = picList.get(position);
     }
 
-    /**
-     * Showing popup menu when tapping on 3 dots
-     */
+
     private void showPopupMenu(View view) {
         // inflate menu
         PopupMenu popup = new PopupMenu(mContext, view);
@@ -86,9 +71,6 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.MyViewHo
         popup.show();
     }
 
-    /**
-     * Click listener for popup menu items
-     */
     class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
 
         public MyMenuItemClickListener() {
@@ -98,10 +80,8 @@ public class PictureAdapter extends RecyclerView.Adapter<PictureAdapter.MyViewHo
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
                 case R.id.action_add_favourite:
-                    Toast.makeText(mContext, "Add to favourite", Toast.LENGTH_SHORT).show();
                     return true;
                 case R.id.action_play_next:
-                    Toast.makeText(mContext, "Play next", Toast.LENGTH_SHORT).show();
                     return true;
                 default:
             }

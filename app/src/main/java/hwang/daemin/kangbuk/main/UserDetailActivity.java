@@ -30,6 +30,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -40,9 +42,8 @@ import java.util.List;
 import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.BaseActivity;
-import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.firebase.FUtil;
 import hwang.daemin.kangbuk.fragments.picture.NewPostUploadTaskFragment;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -62,9 +63,9 @@ public class UserDetailActivity extends BaseActivity implements
     private Bitmap mThumbnail;
     private NewPostUploadTaskFragment mTaskFragment;
     private static final int RC_CAMERA_PERMISSIONS = 102;
-
+    public RequestManager mGlideRequestManager;
     private static final String[] cameraPerms = new String[]{
-            Manifest.permission.READ_EXTERNAL_STORAGE
+            Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
     @Override
@@ -72,26 +73,31 @@ public class UserDetailActivity extends BaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_detail);
         String uId = getIntent().getStringExtra("uId");
+        mGlideRequestManager = Glide.with(UserDetailActivity.this);
         currentPhotoPath = null;
-        currentUserId = fUtil.getCurrentUserId();
+        currentUserId = FUtil.getCurrentUserId();
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         final CollapsingToolbarLayout collapsingToolbar =
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        collapsingToolbar.setTitle(fUtil.getCurrentUserName());
+        collapsingToolbar.setTitle(FUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
 
         try {
-            fUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
+            FUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
                         User user = dataSnapshot.getValue(User.class);
-                        GlideUtil.loadProfileIcon(user.getThumbPhotoURL(), ivProfile);
+                        mGlideRequestManager.load(user.getThumbPhotoURL())
+                                .placeholder(R.drawable.ic_account_circle_black_36dp)
+                                .dontAnimate()
+                                .fitCenter()
+                                .into(ivProfile);
                         collapsingToolbar.setTitle(user.getuName());
                     } else {
-                        collapsingToolbar.setTitle(fUtil.getCurrentUserName());
+                        collapsingToolbar.setTitle(FUtil.getCurrentUserName());
                         ivProfile.setBackgroundResource(R.drawable.ic_account_circle_black_36dp);
                     }
                 }
@@ -207,14 +213,13 @@ public class UserDetailActivity extends BaseActivity implements
 
         if (mThumbnail != null && mResizedBitmap != null) {
             ivProfile.setEnabled(true);
-            StorageReference fullSizeRef = fUtil.getStoreFullProfileRef().child(currentUserId);
-            StorageReference thumbnailRef = fUtil.getStoreThumbProfileRef().child(currentUserId);
-            mTaskFragment.uploadPost(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, "profile.jpg","");
+            StorageReference fullSizeRef = FUtil.getStoreFullProfileRef().child(currentUserId);
+            StorageReference thumbnailRef = FUtil.getStoreThumbProfileRef().child(currentUserId);
+            mTaskFragment.uploadProfile(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, "profile.jpg");
         }
     }
-
     @Override
-    public void onPostUploaded(final String error) {
+    public void onProfileUploaded(final String error) {
         UserDetailActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -226,4 +231,8 @@ public class UserDetailActivity extends BaseActivity implements
             }
         });
     }
+    @Override
+    public void onPictureUploaded(String error, String fullURL, String thumbURL) {
+    }
+
 }

@@ -27,7 +27,7 @@ import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.SignInActivity;
 import hwang.daemin.kangbuk.common.BackPressCloseHandler;
 import hwang.daemin.kangbuk.common.My;
-import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.firebase.FUtil;
 import hwang.daemin.kangbuk.fragments.BibleFragment;
 import hwang.daemin.kangbuk.fragments.CalendarFragment;
 import hwang.daemin.kangbuk.fragments.ColumnFragment;
@@ -64,24 +64,24 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
-        fUtil.FirebaseInstanceInit();
+        FUtil.FirebaseInstanceInit();
         My.INFO.loginType = pref.getInt("loginType",0);
-        if(fUtil.firebaseUser==null){
+        if(FUtil.firebaseUser==null){
             // Not signed in, launch the Sign In activity
             startActivity(new Intent(this, SignInActivity.class));
             finish();
             return;
         }else{
             if( My.INFO.loginType==0|| My.INFO.loginType==1) { //google, facebook
-                My.INFO.name = fUtil.firebaseUser.getDisplayName();
+                My.INFO.name = FUtil.firebaseUser.getDisplayName();
             }else if( My.INFO.loginType==2){ //email
                 My.INFO.name = pref.getString("UserName","anonymous");
             }else if( My.INFO.loginType==3){ //anonymous
                 My.INFO.name = ANONYMOUS;
             }
-            My.INFO.id = fUtil.firebaseUser.getUid();
-            if(fUtil.firebaseUser.getPhotoUrl() != null){
-                My.INFO.photoUrl = fUtil.firebaseUser.getPhotoUrl().toString();
+            My.INFO.id = FUtil.firebaseUser.getUid();
+            if(FUtil.firebaseUser.getPhotoUrl() != null){
+                My.INFO.photoUrl = FUtil.firebaseUser.getPhotoUrl().toString();
             }
 
         }
@@ -131,11 +131,11 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.action_profile:
                 Intent i = new Intent(MainActivity.this, UserDetailActivity.class);
-                i.putExtra("uId",fUtil.getCurrentUserId());
+                i.putExtra("uId", FUtil.getCurrentUserId());
                 startActivity(i);
                 return true;
             case R.id.sign_out_menu:
-                fUtil.firebaseAuth.signOut();
+                FUtil.firebaseAuth.signOut();
                 if(My.INFO.loginType==0)
                     Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 else if(My.INFO.loginType==1)

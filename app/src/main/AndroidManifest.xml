@@ -25,11 +25,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.yongchun.library.view.ImageSelectorActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name="com.yongchun.library.view.ImagePreviewActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
+        <activity android:name="com.yongchun.library.view.ImageCropActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"/>
         <activity android:name=".auth.SignInActivity" />
         <activity android:name=".auth.AnonymousAuthActivity" />
         <activity android:name=".auth.BaseActivity" />
         <activity android:name=".auth.EmailPasswordActivity" />
         <activity android:name=".auth.FacebookLoginActivity" />
+        <activity android:name=".fragments.picture.NewPictureActivity"/>
+        <activity android:name=".fragments.picture.PictureDetailActivity" />
         <activity
             android:name=".fragments.file.YoutubeInfoActivity"
             android:theme="@style/AppTheme.NoActionBar"/>

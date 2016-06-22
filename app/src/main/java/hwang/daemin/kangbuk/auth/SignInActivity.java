@@ -38,7 +38,7 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
-import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.firebase.FUtil;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.main.MainActivity;
 import hwang.daemin.kangbuk.R;
@@ -106,7 +106,7 @@ public class SignInActivity extends AppCompatActivity implements
     private void firebaseAuthWithGoogle(GoogleSignInAccount acct){
         Log.d(TAG, "firebaseAuthWithGoogle:"+ acct.getId());
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(),null);
-        fUtil.firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        FUtil.firebaseAuth.signInWithCredential(credential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 Log.d(TAG,"signInWithCredential:onComplete:"+task.isSuccessful());
@@ -115,7 +115,7 @@ public class SignInActivity extends AppCompatActivity implements
                     Toast.makeText(SignInActivity.this, getString(R.string.auth_sigin_failed), Toast.LENGTH_SHORT).show();
                 }else{
                     FirebaseUser mFirebaseUser = task.getResult().getUser();
-                    fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                    FUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
                     i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
