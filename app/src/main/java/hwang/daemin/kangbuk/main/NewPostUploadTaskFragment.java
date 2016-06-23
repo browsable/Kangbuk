@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package hwang.daemin.kangbuk.fragments.picture;
+package hwang.daemin.kangbuk.main;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -45,9 +45,8 @@ import java.io.InputStream;
 import java.lang.ref.WeakReference;
 
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.data.PictureData;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 public class NewPostUploadTaskFragment extends Fragment {
     private static final String TAG = "NewPostTaskFragment";
@@ -55,23 +54,16 @@ public class NewPostUploadTaskFragment extends Fragment {
     public interface TaskCallbacks {
         void onBitmapResized(Bitmap resizedBitmap, int mMaxDimension);
         void onProfileUploaded(String error);
-        void onPictureUploaded(String error, String fullURL, String thumbURL);
     }
 
     private Context mApplicationContext;
     private TaskCallbacks mCallbacks;
     private Bitmap selectedBitmap;
     private Bitmap thumbnail;
-    private boolean firstFlag;
 
     public NewPostUploadTaskFragment() {
         // Required empty public constructor
     }
-
-    public static NewPostUploadTaskFragment newInstance() {
-        return new NewPostUploadTaskFragment();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,20 +74,19 @@ public class NewPostUploadTaskFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof TaskCallbacks) {
-            mCallbacks = (TaskCallbacks) context;
+        if (getActivity() instanceof TaskCallbacks) {
+            mCallbacks = (TaskCallbacks) getActivity();
         } else {
-            throw new RuntimeException(context.toString()
+            throw new RuntimeException(getActivity().toString()
                     + " must implement TaskCallbacks");
         }
-        mApplicationContext = context.getApplicationContext();
-        firstFlag =true;
+        mApplicationContext = getActivity().getApplicationContext();
     }
 
     @Override
     public void onDetach() {
         super.onDetach();
-        mCallbacks = null;
+            mCallbacks =null;
     }
 
     public void setSelectedBitmap(Bitmap bitmap) {
@@ -118,91 +109,12 @@ public class NewPostUploadTaskFragment extends Fragment {
         LoadResizedBitmapTask task = new LoadResizedBitmapTask(maxDimension);
         task.execute(uri);
     }
-
-    public void uploadPost(Bitmap bitmap, StorageReference inBitmapRef, Bitmap thumbnail, StorageReference inThumbnailRef,
-                           String inFileName) {
-        UploadPostTask uploadTask = new UploadPostTask(bitmap, inBitmapRef, thumbnail, inThumbnailRef, inFileName);
-        uploadTask.execute();
-    }
     public void uploadProfile(Bitmap bitmap, StorageReference inBitmapRef, Bitmap thumbnail, StorageReference inThumbnailRef,
                            String inFileName) {
         UploadProfileTask uploadTask = new UploadProfileTask(bitmap, inBitmapRef, thumbnail, inThumbnailRef, inFileName);
         uploadTask.execute();
     }
-    class UploadPostTask extends AsyncTask<Void, Void, Void> {
-        private WeakReference<Bitmap> bitmapReference;
-        private WeakReference<Bitmap> thumbnailReference;
-        private StorageReference fullSizeRef;
-        private StorageReference thumbnailRef;
 
-        public UploadPostTask(Bitmap bitmap, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef,
-                              String inFileName) {
-            bitmapReference = new WeakReference<>(bitmap);
-            thumbnailReference = new WeakReference<>(thumbnail);
-            fullSizeRef = fullRef.child(inFileName);
-            thumbnailRef = thumbRef.child(inFileName);
-        }
-
-        @Override
-        protected void onPreExecute() {
-
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            Bitmap fullSize = bitmapReference.get();
-            final Bitmap thumbnail = thumbnailReference.get();
-            if (fullSize == null || thumbnail == null) {
-                return null;
-            }
-            ByteArrayOutputStream fullSizeStream = new ByteArrayOutputStream();
-            fullSize.compress(Bitmap.CompressFormat.JPEG, 90, fullSizeStream);
-            byte[] bytes = fullSizeStream.toByteArray();
-            fullSizeRef.putBytes(bytes).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    final Uri fullSizeUrl = taskSnapshot.getDownloadUrl();
-                    ByteArrayOutputStream thumbnailStream = new ByteArrayOutputStream();
-                    thumbnail.compress(Bitmap.CompressFormat.JPEG, 70, thumbnailStream);
-                    thumbnailRef.putBytes(thumbnailStream.toByteArray())
-                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                                @Override
-                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-
-                                    final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
-                                    if (FUtil.firebaseUser == null) {
-                                        mCallbacks.onPictureUploaded(mApplicationContext.getString(
-                                                R.string.error_user_not_signed_in),null,null);
-                                        return;
-                                    }
-                                    if(firstFlag){
-                                        mCallbacks.onPictureUploaded(null,fullSizeUrl.toString(),thumbnailUrl.toString());
-                                        firstFlag = false;
-                                    }else mCallbacks.onPictureUploaded(null,fullSizeUrl.toString(),null);
-
-                                }
-                            }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-
-                            mCallbacks.onPictureUploaded(mApplicationContext.getString(
-                                    R.string.error_upload_task_create),null,null);
-                        }
-                    });
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                  /*  FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
-                    FirebaseCrash.report(e);*/
-                    mCallbacks.onPictureUploaded(mApplicationContext.getString(
-                            R.string.error_upload_task_create),null,null);
-                }
-            });
-            // TODO: Refactor these insanely nested callbacks.
-            return null;
-        }
-    }
     class UploadProfileTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<Bitmap> bitmapReference;
         private WeakReference<Bitmap> thumbnailReference;
@@ -244,7 +156,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                                 public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
 
                                     final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
-                                    if (FUtil.firebaseUser == null) {
+                                    if (fUtil.firebaseUser == null) {
                                         mCallbacks.onProfileUploaded(mApplicationContext.getString(
                                                 R.string.error_user_not_signed_in));
                                         return;
@@ -253,7 +165,7 @@ public class NewPostUploadTaskFragment extends Fragment {
                                             .setPhotoUri(thumbnailUrl)
                                             .build();
 
-                                    FUtil.firebaseUser.updateProfile(profileUpdates)
+                                    fUtil.firebaseUser.updateProfile(profileUpdates)
                                             .addOnCompleteListener(new OnCompleteListener<Void>() {
                                                 @Override
                                                 public void onComplete(@NonNull Task<Void> task) {
@@ -262,8 +174,8 @@ public class NewPostUploadTaskFragment extends Fragment {
                                                     }
                                                 }
                                             });
-                                    FUtil.getUserRef().child(FUtil.firebaseUser.getUid())
-                                            .setValue(new User(FUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
+                                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid())
+                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
                                     mCallbacks.onProfileUploaded(null);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
@@ -357,7 +269,6 @@ public class NewPostUploadTaskFragment extends Fragment {
 
         return inSampleSize;
     }
-
     public Bitmap decodeSampledBitmapFromUri(Uri fileUri, int reqWidth, int reqHeight)
             throws IOException {
         InputStream stream = new BufferedInputStream(
@@ -381,28 +292,5 @@ public class NewPostUploadTaskFragment extends Fragment {
         else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_180) {  return 180; }
         else if (exifOrientation == ExifInterface.ORIENTATION_ROTATE_270) {  return 270; }
         return 0;
-    }
-    public static Bitmap rotate(Bitmap image, int degrees)
-    {
-        if(degrees != 0 && image != null)
-        {
-            Matrix m = new Matrix();
-            m.setRotate(degrees, (float)image.getWidth(), (float)image.getHeight());
-            try
-            {
-                Bitmap b = Bitmap.createBitmap(image, 0, 0, image.getWidth(), image.getHeight(), m, true);
-                if(image != b)
-                {
-                    image.recycle();
-                    image = b;
-                }
-                image = b;
-            }
-            catch(OutOfMemoryError ex)
-            {
-                ex.printStackTrace();
-            }
-        }
-        return image;
     }
 }

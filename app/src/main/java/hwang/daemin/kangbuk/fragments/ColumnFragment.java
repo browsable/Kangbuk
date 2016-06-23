@@ -54,7 +54,7 @@ public class ColumnFragment extends Fragment {
         bar = (ProgressBar) rootView.findViewById(R.id.progressBar);
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view); //
         columnList = new ArrayList<>(); // 메모 공간 선언 (메모리 할당)
-        adapter = new ColumnAdapter(getActivity(), columnList); // 어댑터 메모리 할당
+        adapter = new ColumnAdapter(columnList); // 어댑터 메모리 할당
 
         RecyclerView.LayoutManager mLayoutManager = new GridLayoutManager(getActivity(), 2);
         recyclerView.setLayoutManager(mLayoutManager);

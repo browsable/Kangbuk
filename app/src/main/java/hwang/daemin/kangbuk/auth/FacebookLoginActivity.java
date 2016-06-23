@@ -40,7 +40,7 @@ import com.google.firebase.auth.FirebaseUser;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.main.MainActivity;
 
 /**
@@ -68,7 +68,7 @@ public class FacebookLoginActivity extends BaseActivity{
 
         // [START initialize_auth]
         // Initialize Firebase Auth
-        mAuth = FUtil.firebaseAuth;
+        mAuth = fUtil.firebaseAuth;
         // [END initialize_auth]
 
         // [START auth_state_listener]
@@ -176,7 +176,7 @@ public class FacebookLoginActivity extends BaseActivity{
                                     Toast.LENGTH_SHORT).show();
                         }else{
                             FirebaseUser mFirebaseUser = task.getResult().getUser();
-                            FUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
                         }
                         // [START_EXCLUDE]
                         hideProgressDialog();

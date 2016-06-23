@@ -23,8 +23,6 @@ import android.widget.Toast;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DatabaseReference;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import hwang.daemin.kangbuk.R;
@@ -32,7 +30,7 @@ import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.common.GridSpacingItemDecoration;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.PictureData;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 
 /**
@@ -56,7 +54,7 @@ public class PictureFragment extends Fragment {
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recycler_view);
         fab = (FloatingActionButton) rootView.findViewById(R.id.fab_submit_post);
         mAdapter = new FirebaseRecyclerAdapter<PictureData, PictureViewHolder>(PictureData.class, R.layout.listitem_picture,
-                PictureViewHolder.class,FUtil.databaseReference.child("posts").limitToFirst(100)) {
+                PictureViewHolder.class, fUtil.databaseReference.child("picture").limitToLast(100)) {
 
             @Override
             protected void populateViewHolder(final PictureViewHolder viewHolder, final PictureData pic, final int position) {

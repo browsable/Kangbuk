@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -22,11 +23,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
@@ -38,19 +38,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.auth.BaseActivity;
 import hwang.daemin.kangbuk.data.PictureData;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class NewPictureActivity extends BaseActivity implements
+public class NewPictureActivity extends AppCompatActivity implements
         EasyPermissions.PermissionCallbacks,
-        NewPostUploadTaskFragment.TaskCallbacks {
+        NewPicUploadTaskFragment.TaskCallbacks {
 
     private static final String TAG = "NewPostActivity";
-    private static final String REQUIRED = "Required";
-    public static final String TAG_TASK_FRAGMENT = "newPostUploadTaskFragment";
+    public static final String TAG_TASK_FRAGMENT = "NewPicUploadTaskFragment";
 
     private LinearLayout btPicture, llGridView;
     private EditText mTitleField;
@@ -68,12 +66,13 @@ public class NewPictureActivity extends BaseActivity implements
     private static final String[] cameraPerms = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
-    private NewPostUploadTaskFragment mTaskFragment;
+    private NewPicUploadTaskFragment mTaskFragment;
     private String title;
     private String body;
     private String userId;
     private User user;
     private String key;
+    private int imgCnt;
     @Override
     public void onDestroy() {
         // store the data in the fragment
@@ -91,6 +90,7 @@ public class NewPictureActivity extends BaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        imgCnt=0;
         mTitleField = (EditText) findViewById(R.id.field_title);
         mBodyField = (EditText) findViewById(R.id.field_body);
         btPicture = (LinearLayout) findViewById(R.id.btPicture);
@@ -131,11 +131,11 @@ public class NewPictureActivity extends BaseActivity implements
             resultRecyclerView.setAdapter(new GridAdapter());
         }
         FragmentManager fm = getSupportFragmentManager();
-        mTaskFragment = (NewPostUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
+        mTaskFragment = (NewPicUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
         // create the fragment and data the first time
         if (mTaskFragment == null) {
             // add the fragment
-            mTaskFragment = new NewPostUploadTaskFragment();
+            mTaskFragment = new NewPicUploadTaskFragment();
             fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
         }
         Bitmap selectedBitmap = mTaskFragment.getSelectedBitmap();
@@ -170,12 +170,12 @@ public class NewPictureActivity extends BaseActivity implements
         body = mBodyField.getText().toString();
 
         if (TextUtils.isEmpty(title)) {
-            mTitleField.setError(REQUIRED);
+            mTitleField.setError("제목을 입력하세요");
             return;
         }
 
-        userId = FUtil.getCurrentUserId();
-        FUtil.databaseReference.child("user").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
+        userId = fUtil.getCurrentUserId();
+        fUtil.databaseReference.child("user").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     user = dataSnapshot.getValue(User.class);
@@ -185,12 +185,9 @@ public class NewPictureActivity extends BaseActivity implements
                                 "권한이 필요합니다",
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        for(String path : images){
-                            Uri fileURI = getUriFromPath(path);
-                            mTaskFragment.resizeBitmap(fileURI, THUMBNAIL_MAX_DIMENSION);
-                            mTaskFragment.resizeBitmap(fileURI, FULL_SIZE_MAX_DIMENSION);
-                            Log.i("test",path);
-                        }
+                            String path = images.get(imgCnt);
+                            mTaskFragment.resizeBitmapWithPath(path,THUMBNAIL_MAX_DIMENSION);
+                            mTaskFragment.resizeBitmapWithPath(path,FULL_SIZE_MAX_DIMENSION);
                     }
                     finish();
                 }
@@ -199,17 +196,6 @@ public class NewPictureActivity extends BaseActivity implements
                     Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                 }
         });
-    }
-    public Uri getUriFromPath(String path){
-        String fileName= path;
-        Uri fileUri = Uri.parse( fileName );
-        String filePath = fileUri.getPath();
-        Cursor cursor = getContentResolver().query( MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                null, "_data = '" + filePath + "'", null, null );
-        cursor.moveToNext();
-        int id = cursor.getInt( cursor.getColumnIndex( "_id" ) );
-        Uri uri = ContentUris.withAppendedId( MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id );
-        return uri;
     }
 
     private class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
@@ -231,6 +217,10 @@ public class NewPictureActivity extends BaseActivity implements
                 public void onClick(View v) {
                     images.remove(position);
                     notifyDataSetChanged();
+                    if(images.size()==0){
+                        btPicture.setVisibility(View.VISIBLE);
+                        llGridView.setVisibility(View.GONE);
+                    }
                 }
             });
         }
@@ -264,29 +254,24 @@ public class NewPictureActivity extends BaseActivity implements
 
     @Override
     public void onBitmapResized(Bitmap resizedBitmap, int mMaxDimension) {
-        if (resizedBitmap == null) {
-            Log.e(TAG, "Couldn't resize bitmap in background task.");
-            Toast.makeText(getApplicationContext(), "Couldn't resize bitmap.",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (mMaxDimension == THUMBNAIL_MAX_DIMENSION) {
-            mThumbnail = resizedBitmap;
-        } else if (mMaxDimension == FULL_SIZE_MAX_DIMENSION) {
-            mResizedBitmap = resizedBitmap;
-        }
+            if (resizedBitmap == null) {
+                Log.e(TAG, "Couldn't resize bitmap in background task.");
+                Toast.makeText(getApplicationContext(), "Couldn't resize bitmap.",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (mMaxDimension == THUMBNAIL_MAX_DIMENSION) {
+                mThumbnail = resizedBitmap;
+            } else if (mMaxDimension == FULL_SIZE_MAX_DIMENSION) {
+                mResizedBitmap = resizedBitmap;
+            }
 
-        if (mThumbnail != null && mResizedBitmap != null) {
-            Long now = System.currentTimeMillis();
-            StorageReference fullSizeRef = FUtil.getStoreGalleryRef().child(now.toString()).child("full");
-            StorageReference thumbnailRef = FUtil.getStoreGalleryRef().child(now.toString()).child("thumb");
-            mTaskFragment.uploadPost(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, now.toString());
-        }
-    }
-
-    @Override
-    public void onProfileUploaded(String error) {
-
+            if (mThumbnail != null && mResizedBitmap != null) {
+                Long now = System.currentTimeMillis();
+                StorageReference fullSizeRef = fUtil.getStorePictureRef().child(now.toString()).child("full");
+                StorageReference thumbnailRef = fUtil.getStorePictureRef().child(now.toString()).child("thumb");
+                mTaskFragment.uploadPost(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, now.toString());
+            }
     }
 
     @Override
@@ -294,19 +279,29 @@ public class NewPictureActivity extends BaseActivity implements
         NewPictureActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                hideProgressDialog();
                 if (error != null) {
                     Toast.makeText(NewPictureActivity.this, error, Toast.LENGTH_SHORT).show();
                 }else{
-                    if(thumbURL != null){
-                        String key = FUtil.getPictureRef().push().getKey();
+                    if(imgCnt==0){
+                        key = fUtil.getPictureRef().push().getKey();
                         Long time = System.currentTimeMillis();
-                        FUtil.getPictureRef().child(key).setValue(new PictureData(userId,user.getuName(),title,body,thumbURL,time));
+                        fUtil.getPictureRef().child(key).setValue(new PictureData(userId,user.getuName(),title,body,thumbURL,time));
+                        fUtil.getPictureDetailRef().child(key).push().setValue(fullURL);
+                        String path = images.get(++imgCnt);
+                        mTaskFragment.resizeBitmapWithPath(path, THUMBNAIL_MAX_DIMENSION);
+                        mTaskFragment.resizeBitmapWithPath(path, FULL_SIZE_MAX_DIMENSION);
+                    }else if(imgCnt!=images.size()){
+                        String path = images.get(imgCnt++);
+                        mTaskFragment.resizeBitmapWithPath(path, THUMBNAIL_MAX_DIMENSION);
+                        mTaskFragment.resizeBitmapWithPath(path, FULL_SIZE_MAX_DIMENSION);
+                        fUtil.getPictureDetailRef().child(key).push().setValue(fullURL);
                     }
-                    fullURLList.add(fullURL);
-                    if(fullURLList.size()==images.size()){
-                        FUtil.getPictureDetailRef().child(key).setValue(fullURLList);
-                    }
+                    /*fullURLList.add(fullURL);
+                    Log.i("test",fullURLList.size()+"");*/
+                    /*f(fullURLList.size()==images.size()) {
+
+                    }else{*/
+                    //}
                 }
             }
         });

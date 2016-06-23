@@ -37,7 +37,8 @@
         <activity android:name=".auth.EmailPasswordActivity" />
         <activity android:name=".auth.FacebookLoginActivity" />
         <activity android:name=".fragments.picture.NewPictureActivity"/>
-        <activity android:name=".fragments.picture.PictureDetailActivity" />
+        <activity android:name=".fragments.picture.PictureDetailActivity"
+            android:windowSoftInputMode="stateVisible|adjustResize"/>
         <activity
             android:name=".fragments.file.YoutubeInfoActivity"
             android:theme="@style/AppTheme.NoActionBar"/>

@@ -27,7 +27,7 @@ import com.prolificinteractive.materialcalendarview.OnMonthChangedListener;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.CalendarData;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 
 /**
@@ -64,7 +64,7 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
         //mLinearLayoutManager.setStackFromEnd(true);
         mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
         // New child entries
-        Query allPostsQuery = FUtil.databaseReference.child(year + "/" + month).orderByChild("day");
+        Query allPostsQuery = fUtil.databaseReference.child(year + "/" + month).orderByChild("day");
         mFirebaseAdapter = getFirebaseRecyclerAdapter(allPostsQuery);
         mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override
@@ -106,8 +106,8 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
             public void onClick(View view) {
                 // Send messages on click.
                 CalendarData calendarData = new CalendarData(
-                        year, month, day, etTitle.getText().toString(), FUtil.getCurrentUserId());
-                FUtil.databaseReference.child(year + "/" + month).push().setValue(calendarData);
+                        year, month, day, etTitle.getText().toString(), fUtil.getCurrentUserId());
+                fUtil.databaseReference.child(year + "/" + month).push().setValue(calendarData);
                 etTitle.setText("");
                 mFirebaseAdapter.notifyDataSetChanged();
             }
@@ -124,7 +124,7 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
         mSendButton.setText(month + "월" + day + "일 " + "일정추가");
         if (screenMonth != month) {
             screenMonth = month;
-            Query allPostsQuery = FUtil.databaseReference.child(year + "/" + month).orderByChild("day");
+            Query allPostsQuery = fUtil.databaseReference.child(year + "/" + month).orderByChild("day");
             mFirebaseAdapter = getFirebaseRecyclerAdapter(allPostsQuery);
             mMessageRecyclerView.setAdapter(mFirebaseAdapter);
         }
@@ -140,7 +140,7 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
         if (screenMonth != month) {
             ll.setVisibility(View.INVISIBLE);
             screenMonth = month;
-            Query allPostsQuery = FUtil.databaseReference.child(year + "/" + month).orderByChild("day");
+            Query allPostsQuery = fUtil.databaseReference.child(year + "/" + month).orderByChild("day");
             mFirebaseAdapter = getFirebaseRecyclerAdapter(allPostsQuery);
             mMessageRecyclerView.setAdapter(mFirebaseAdapter);
         }
@@ -169,12 +169,12 @@ public class CalendarFragment extends Fragment implements OnDateSelectedListener
                 final String key = this.getRef(position).getKey();
                 viewHolder.tvDate.setText(calendarData.getMonth() + "." + calendarData.getDay());
                 viewHolder.tvTitle.setText(calendarData.getTitle());
-                if(FUtil.getCurrentUserId().equals(calendarData.getuId())) {
+                if(fUtil.getCurrentUserId().equals(calendarData.getuId())) {
                     viewHolder.btRemove.setVisibility(View.VISIBLE);
                     viewHolder.btRemove.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                           FUtil.databaseReference.child(String.valueOf(calendarData.getYear()))
+                           fUtil.databaseReference.child(String.valueOf(calendarData.getYear()))
                                    .child(String.valueOf(calendarData.getMonth())).child(key).removeValue();
                         }
                     });

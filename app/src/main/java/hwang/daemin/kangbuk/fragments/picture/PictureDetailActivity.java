@@ -4,15 +4,20 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ScrollingTabContainerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,10 +29,11 @@ import java.util.List;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.BaseActivity;
+import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.data.Comment;
 import hwang.daemin.kangbuk.data.PictureData;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 
 public class PictureDetailActivity extends BaseActivity implements View.OnClickListener {
 
@@ -47,33 +53,62 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
     private EditText mCommentField;
     private Button mCommentButton;
     private RecyclerView mCommentsRecycler;
+    private RecyclerView photoRecycler;
+    private ScrollView sv;
+    FirebaseRecyclerAdapter<String,
+            PhotoViewHolder> mFirebaseAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
-
-        // Get post key from intent
+        sv = (ScrollView) findViewById(R.id.sv);
         mPostKey = getIntent().getStringExtra(EXTRA_POST_KEY);
         if (mPostKey == null) {
             throw new IllegalArgumentException("Must pass EXTRA_POST_KEY");
         }
 
         // Initialize Database
-        mPostReference = FUtil.databaseReference.child("posts").child(mPostKey);
-        mCommentsReference = FUtil.databaseReference.child("post-comments").child(mPostKey);
+        mPostReference = fUtil.databaseReference.child("picture").child(mPostKey);
+        mCommentsReference = fUtil.databaseReference.child("picture-comments").child(mPostKey);
 
         // Initialize Views
         mAuthorView = (TextView) findViewById(R.id.post_author);
         mTitleView = (TextView) findViewById(R.id.post_title);
         mBodyView = (TextView) findViewById(R.id.post_body);
+        photoRecycler = (RecyclerView) findViewById(R.id.recycler_photo);
+        photoRecycler.setLayoutManager(new LinearLayoutManager(this));
+
+        mFirebaseAdapter = new FirebaseRecyclerAdapter<String,
+                PhotoViewHolder>(
+                String.class,
+                R.layout.listitem_picturedetail,
+                PhotoViewHolder.class,
+                fUtil.databaseReference.child("picture-urls").child(mPostKey)){
+
+            @Override
+            protected void populateViewHolder(final PhotoViewHolder viewHolder,
+                                              String fullURL, int position) {
+                GlideUtil.loadImage(fullURL, viewHolder.ivPhoto);
+            }
+        };
+        photoRecycler.setAdapter(mFirebaseAdapter);
+        photoRecycler.setNestedScrollingEnabled(false);
         mCommentField = (EditText) findViewById(R.id.field_comment_text);
         mCommentButton = (Button) findViewById(R.id.button_post_comment);
         mCommentsRecycler = (RecyclerView) findViewById(R.id.recycler_comments);
         mCommentButton.setOnClickListener(this);
         mCommentsRecycler.setLayoutManager(new LinearLayoutManager(this));
-    }
+        mCommentsRecycler.setNestedScrollingEnabled(false);
 
+    }
+    public static class PhotoViewHolder extends RecyclerView.ViewHolder {
+        public ImageView ivPhoto;
+        public PhotoViewHolder(View v) {
+            super(v);
+            ivPhoto = (ImageView) itemView.findViewById(R.id.ivPhoto);
+        }
+    }
     @Override
     public void onStart() {
         super.onStart();
@@ -101,7 +136,6 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
 
         // Keep copy of post listener so we can remove it when app stops
         mPostListener = postListener;
-
         // Listen for comments
         mAdapter = new CommentAdapter(this, mCommentsReference);
         mCommentsRecycler.setAdapter(mAdapter);
@@ -124,28 +158,32 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_post_comment:
+                if (TextUtils.isEmpty(mCommentField.getText().toString())) {
+                    mCommentField.setError("댓글을 입력하세요");
+                    return;
+                }
                 postComment();
                 break;
         }
     }
 
     private void postComment() {
-        final String uid = FUtil.getCurrentUserId();
-        FUtil.databaseReference.child("user").child(uid)
-                .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        User user = dataSnapshot.getValue(User.class);
-                        String authorName = user.getuName();
-                        String commentText = mCommentField.getText().toString();
-                        Comment comment = new Comment(uid, authorName, commentText);
-                        mCommentsReference.push().setValue(comment);
-                        mCommentField.setText(null);
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
+        final String uid = fUtil.getCurrentUserId();
+        fUtil.databaseReference.child("user").child(uid)
+            .addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    User user = dataSnapshot.getValue(User.class);
+                    String authorName = user.getuName();
+                    String commentText = mCommentField.getText().toString();
+                    Comment comment = new Comment(uid, authorName, commentText);
+                    mCommentsReference.push().setValue(comment);
+                    mCommentField.setText(null);
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
     }
 
     private static class CommentViewHolder extends RecyclerView.ViewHolder {

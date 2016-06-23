@@ -31,7 +31,7 @@ import hwang.daemin.kangbuk.common.CodelabPreferences;
 import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.GroupData;
-import hwang.daemin.kangbuk.firebase.FUtil;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.main.UserDetailActivity;
 
 
@@ -69,7 +69,7 @@ public class WeekGroupFragment extends Fragment {
                 GroupData.class,
                 R.layout.listitem_message,
                 MessageViewHolder.class,
-                FUtil.databaseReference.child(WEEK_GROUP)) {
+                fUtil.databaseReference.child(WEEK_GROUP)) {
 
             @Override
             protected void populateViewHolder(final MessageViewHolder viewHolder,
@@ -78,7 +78,7 @@ public class WeekGroupFragment extends Fragment {
                 viewHol.messageTextView.setText(groupData.getText());
                 viewHol.messengerTextView.setText(groupData.getName());
                 final String uId = groupData.getuId();
-                FUtil.databaseReference.child("user/" + uId + "/thumbPhotoURL/").addValueEventListener(new ValueEventListener() {
+                fUtil.databaseReference.child("user/" + uId + "/thumbPhotoURL/").addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         tmpThumbPhotoURL = (String) dataSnapshot.getValue();
@@ -89,12 +89,12 @@ public class WeekGroupFragment extends Fragment {
                     public void onCancelled(DatabaseError databaseError) {
                     }
                 });
-                if(FUtil.getCurrentUserId().equals(uId)) {
+                if(fUtil.getCurrentUserId().equals(uId)) {
                     viewHolder.btRemove.setVisibility(View.VISIBLE);
                     viewHolder.btRemove.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            FUtil.databaseReference.child("weekgroup/" + uId).removeValue();
+                            fUtil.databaseReference.child("weekgroup/" + uId).removeValue();
                         }
                     });
                 }
@@ -126,8 +126,6 @@ public class WeekGroupFragment extends Fragment {
                 }
             }
         });
-
-        mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
         mMessageRecyclerView.setAdapter(mFirebaseAdapter);
 
         mMessageEditText = (EditText) rootView.findViewById(R.id.messageEditText);
@@ -157,10 +155,10 @@ public class WeekGroupFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 // Send messages on click.
-                String uId = FUtil.getCurrentUserId();
+                String uId = fUtil.getCurrentUserId();
                 GroupData groupData = new GroupData(mMessageEditText.getText().toString(),
-                        FUtil.getCurrentUserName(), uId);
-                FUtil.databaseReference.child(WEEK_GROUP).child(FUtil.getCurrentUserId()).setValue(groupData);
+                        fUtil.getCurrentUserName(), uId);
+                fUtil.databaseReference.child(WEEK_GROUP).child(fUtil.getCurrentUserId()).setValue(groupData);
                 mMessageEditText.setText("");
             }
         });

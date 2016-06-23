@@ -43,8 +43,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.BaseActivity;
 import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.firebase.FUtil;
-import hwang.daemin.kangbuk.fragments.picture.NewPostUploadTaskFragment;
+import hwang.daemin.kangbuk.firebase.fUtil;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class UserDetailActivity extends BaseActivity implements
@@ -75,17 +74,17 @@ public class UserDetailActivity extends BaseActivity implements
         String uId = getIntent().getStringExtra("uId");
         mGlideRequestManager = Glide.with(UserDetailActivity.this);
         currentPhotoPath = null;
-        currentUserId = FUtil.getCurrentUserId();
+        currentUserId = fUtil.getCurrentUserId();
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         final CollapsingToolbarLayout collapsingToolbar =
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
-        collapsingToolbar.setTitle(FUtil.getCurrentUserName());
+        collapsingToolbar.setTitle(fUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
 
         try {
-            FUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
+            fUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     if (dataSnapshot.exists()) {
@@ -97,7 +96,7 @@ public class UserDetailActivity extends BaseActivity implements
                                 .into(ivProfile);
                         collapsingToolbar.setTitle(user.getuName());
                     } else {
-                        collapsingToolbar.setTitle(FUtil.getCurrentUserName());
+                        collapsingToolbar.setTitle(fUtil.getCurrentUserName());
                         ivProfile.setBackgroundResource(R.drawable.ic_account_circle_black_36dp);
                     }
                 }
@@ -213,8 +212,8 @@ public class UserDetailActivity extends BaseActivity implements
 
         if (mThumbnail != null && mResizedBitmap != null) {
             ivProfile.setEnabled(true);
-            StorageReference fullSizeRef = FUtil.getStoreFullProfileRef().child(currentUserId);
-            StorageReference thumbnailRef = FUtil.getStoreThumbProfileRef().child(currentUserId);
+            StorageReference fullSizeRef = fUtil.getStoreFullProfileRef().child(currentUserId);
+            StorageReference thumbnailRef = fUtil.getStoreThumbProfileRef().child(currentUserId);
             mTaskFragment.uploadProfile(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, "profile.jpg");
         }
     }
@@ -231,8 +230,4 @@ public class UserDetailActivity extends BaseActivity implements
             }
         });
     }
-    @Override
-    public void onPictureUploaded(String error, String fullURL, String thumbURL) {
-    }
-
 }
