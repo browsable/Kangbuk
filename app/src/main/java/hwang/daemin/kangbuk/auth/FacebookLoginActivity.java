@@ -40,6 +40,8 @@ import com.google.firebase.auth.FacebookAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Random;
+
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
@@ -182,7 +184,9 @@ public class FacebookLoginActivity extends BaseActivity{
                                     Toast.LENGTH_SHORT).show();
                         }else{
                             FirebaseUser mFirebaseUser = task.getResult().getUser();
-                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                            Random r = new Random();
+                            String bibleNum = String.valueOf(r.nextInt(239));
+                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null,bibleNum));
                         }
                         // [START_EXCLUDE]
                         hideProgressDialog();

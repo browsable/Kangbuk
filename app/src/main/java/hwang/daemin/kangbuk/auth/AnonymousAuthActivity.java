@@ -32,6 +32,8 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.util.Random;
+
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
@@ -131,7 +133,9 @@ public class AnonymousAuthActivity extends BaseActivity implements
                             pref.edit().putInt("loginType",3).commit();
                             finish();
                             FirebaseUser mFirebaseUser = task.getResult().getUser();
-                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null));
+                            Random r = new Random();
+                            String bibleNum = String.valueOf(r.nextInt(239));
+                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null,bibleNum));
                             Intent i = new Intent(AnonymousAuthActivity.this, MainActivity.class);
                             i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

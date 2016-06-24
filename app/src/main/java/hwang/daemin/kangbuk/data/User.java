@@ -5,6 +5,7 @@ public class User {
     private String uName;
     private String fullPhotoURL;
     private String thumbPhotoURL;
+    private String biblenum;
 
     public User() {
 
@@ -13,10 +14,11 @@ public class User {
         this.fullPhotoURL = fullPhotoURL;
         this.thumbPhotoURL = thumbPhotoURL;
     }
-    public User(String uName, String fullPhotoURL, String thumbPhotoURL) {
+    public User(String uName, String fullPhotoURL, String thumbPhotoURL, String biblenum) {
         this.uName = uName;
         this.fullPhotoURL = fullPhotoURL;
         this.thumbPhotoURL = thumbPhotoURL;
+        this.biblenum = biblenum;
     }
 
     public String getuName() {
@@ -41,5 +43,13 @@ public class User {
 
     public void setThumbPhotoURL(String thumbPhotoURL) {
         this.thumbPhotoURL = thumbPhotoURL;
+    }
+
+    public String getBiblenum() {
+        return biblenum;
+    }
+
+    public void setBiblenum(String biblenum) {
+        this.biblenum = biblenum;
     }
 }

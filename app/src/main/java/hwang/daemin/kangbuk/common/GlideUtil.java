@@ -34,14 +34,4 @@ public class GlideUtil {
                 .centerCrop()
                 .into(imageView);
     }
-
-    public static void loadProfileIcon(String url, ImageView imageView) {
-        Context context = imageView.getContext();
-        Glide.with(context)
-                .load(url)
-                .placeholder(R.drawable.ic_account_circle_black_36dp)
-                .dontAnimate()
-                .fitCenter()
-                .into(imageView);
-    }
 }

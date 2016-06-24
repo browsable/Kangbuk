@@ -27,9 +27,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -38,7 +36,6 @@ import hwang.daemin.kangbuk.auth.SignInActivity;
 import hwang.daemin.kangbuk.common.BackPressCloseHandler;
 import hwang.daemin.kangbuk.common.DialDefault;
 import hwang.daemin.kangbuk.common.My;
-import hwang.daemin.kangbuk.data.Bible;
 import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.fragments.BibleFragment;
 import hwang.daemin.kangbuk.fragments.CalendarFragment;
@@ -126,10 +123,8 @@ public class MainActivity extends AppCompatActivity
 
         Map<String, Object> bibleRandom = new HashMap<>();
         Random r = new Random();
-        bibleRandom.put("biblenum",r.nextInt(239));
+        bibleRandom.put("biblenum",String.valueOf(r.nextInt(239)));
         fUtil.databaseReference.child("user").child(fUtil.getCurrentUserId()).updateChildren(bibleRandom);
-
-
     }
     public void fetchConfig() {
         long cacheExpiration = 3600;

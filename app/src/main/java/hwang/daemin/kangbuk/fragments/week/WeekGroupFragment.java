@@ -19,6 +19,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -28,7 +29,6 @@ import com.google.firebase.storage.StorageReference;
 import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.common.CodelabPreferences;
-import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.GroupData;
 import hwang.daemin.kangbuk.firebase.fUtil;
@@ -82,7 +82,12 @@ public class WeekGroupFragment extends Fragment {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         tmpThumbPhotoURL = (String) dataSnapshot.getValue();
-                        GlideUtil.loadProfileIcon(tmpThumbPhotoURL, viewHol.messengerImageView);
+                        Glide.with(getActivity())
+                                .load(tmpThumbPhotoURL)
+                                .placeholder(R.drawable.ic_account_circle_black_36dp)
+                                .dontAnimate()
+                                .fitCenter()
+                                .into(viewHol.messengerImageView);
                     }
                     @Override
                     public void onCancelled(DatabaseError databaseError) {

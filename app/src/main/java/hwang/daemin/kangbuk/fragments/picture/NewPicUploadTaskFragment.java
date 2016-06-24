@@ -44,6 +44,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
+import java.util.Random;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
@@ -237,8 +238,10 @@ public class NewPicUploadTaskFragment extends Fragment {
                                                     }
                                                 }
                                             });
+                                    Random r = new Random();
+                                    String bibleNum = String.valueOf(r.nextInt(239));
                                     fUtil.getUserRef().child(fUtil.firebaseUser.getUid())
-                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
+                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString(),bibleNum));
                                     mCallbacks.onPhotoUploaded(null,null,null);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {

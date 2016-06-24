@@ -21,6 +21,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -98,7 +99,15 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 thumbPhotoURL = (String) dataSnapshot.getValue();
-                GlideUtil.loadProfileIcon(thumbPhotoURL, ivProfile);
+                try {
+                    Glide.with(PictureDetailActivity.this)
+                            .load(thumbPhotoURL)
+                            .placeholder(R.drawable.ic_account_circle_black_36dp)
+                            .dontAnimate()
+                            .fitCenter()
+                            .into(ivProfile);
+                }catch (IllegalArgumentException e){
+                }
             }
             @Override
             public void onCancelled(DatabaseError databaseError) {
@@ -373,11 +382,21 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
             viewHolder.bodyView.setText(comment.text);
             viewHolder.tvDate.setText(DateUtils.getRelativeTimeSpanString(comment.time));
             final String comentId = comment.uid;
-            fUtil.databaseReference.child("user/" + comentId + "/thumbPhotoURL/").addValueEventListener(new ValueEventListener() {
+            fUtil.databaseReference.child("user/" + comentId + "/thumbPhotoURL/").addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     thumbPhotoURL = (String) dataSnapshot.getValue();
-                    GlideUtil.loadProfileIcon(thumbPhotoURL, viewHolder.ivProfile);
+                    try{
+                    Glide.with(PictureDetailActivity.this)
+                            .load(thumbPhotoURL)
+                            .placeholder(R.drawable.ic_account_circle_black_36dp)
+                            .dontAnimate()
+                            .fitCenter()
+                            .into(viewHolder.ivProfile);
+                }catch (IllegalArgumentException e){
+                        e.printStackTrace();
+                }
+
                 }
                 @Override
                 public void onCancelled(DatabaseError databaseError) {

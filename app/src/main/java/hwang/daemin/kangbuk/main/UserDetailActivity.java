@@ -41,11 +41,11 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.BaseActivity;
-import hwang.daemin.kangbuk.data.Bible;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.fragments.picture.NewPicUploadTaskFragment;
@@ -53,7 +53,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 
 public class UserDetailActivity extends BaseActivity implements
         EasyPermissions.PermissionCallbacks,
-        NewPicUploadTaskFragment.TaskCallbacks{
+        NewPicUploadTaskFragment.TaskCallbacks {
     private final String TAG = "UserDetailActivity";
     private static final int THUMBNAIL_MAX_DIMENSION = 480;
     private static final int FULL_SIZE_MAX_DIMENSION = 960;
@@ -68,16 +68,17 @@ public class UserDetailActivity extends BaseActivity implements
     private NewPicUploadTaskFragment mTaskFragment;
     private static final int RC_CAMERA_PERMISSIONS = 102;
     public RequestManager mGlideRequestManager;
-    private TextView tvPos,tvKo,tvEn;
+    private TextView tvPos, tvKo, tvEn;
+    private String bibleNum;
     private static final String[] cameraPerms = new String[]{
-            Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE
+            Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_detail);
-        String uId = getIntent().getStringExtra("uId");
+        final String uId = getIntent().getStringExtra("uId");
         mGlideRequestManager = Glide.with(UserDetailActivity.this);
         currentUserId = fUtil.getCurrentUserId();
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -103,6 +104,45 @@ public class UserDetailActivity extends BaseActivity implements
                                 .fitCenter()
                                 .into(ivProfile);
                         collapsingToolbar.setTitle(user.getuName());
+                        bibleNum = user.getBiblenum();
+                        if(bibleNum==null){
+                            Random r = new Random();
+                            bibleNum = String.valueOf(r.nextInt(239));
+                        }
+                        fUtil.databaseReference.child("bible").child(bibleNum).addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                try {
+                                    HashMap<String, String> hash = (HashMap) dataSnapshot.getValue();
+                                    tvPos.setText(hash.get("본문"));
+                                    tvKo.setText(hash.get("한글"));
+                                    tvEn.setText(hash.get("영어"));
+                                }catch(NullPointerException e){
+                                    Random r = new Random();
+                                    String bibleNum = String.valueOf(r.nextInt(239));
+                                    fUtil.databaseReference.child("bible").child(bibleNum).addValueEventListener(new ValueEventListener() {
+                                        @Override
+                                        public void onDataChange(DataSnapshot dataSnapshot) {
+                                            try {
+                                                HashMap<String, String> hash = (HashMap) dataSnapshot.getValue();
+                                                tvPos.setText(hash.get("본문"));
+                                                tvKo.setText(hash.get("한글"));
+                                                tvEn.setText(hash.get("영어"));
+                                            }catch(NullPointerException e){
+                                            }
+                                        }
+                                        @Override
+                                        public void onCancelled(DatabaseError databaseError) {
+
+                                        }
+                                    });
+                                }
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
                     } else {
                         collapsingToolbar.setTitle(fUtil.getCurrentUserName());
                         ivProfile.setBackgroundResource(R.drawable.ic_account_circle_black_36dp);
@@ -114,32 +154,9 @@ public class UserDetailActivity extends BaseActivity implements
 
                 }
             });
-            fUtil.databaseReference.child("user").child(uId).child("biblenum").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Long bibleNum = (Long)dataSnapshot.getValue();
-                    fUtil.databaseReference.child("bible").child(bibleNum.toString()).addValueEventListener(new ValueEventListener() {
-                        @Override
-                        public void onDataChange(DataSnapshot dataSnapshot) {
-                            HashMap<String,String> hash =(HashMap) dataSnapshot.getValue();
-                            tvPos.setText(hash.get("본문"));
-                            tvKo.setText(hash.get("한글"));
-                            tvEn.setText(hash.get("영어"));
-                        }
-                        @Override
-                        public void onCancelled(DatabaseError databaseError) {
+        } catch (Exception e) {
+        }
 
-                        }
-                    });
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-        }catch (Exception e){}
 
         FragmentManager fm = getSupportFragmentManager();
         mTaskFragment = (NewPicUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
@@ -170,16 +187,19 @@ public class UserDetailActivity extends BaseActivity implements
                             RC_CAMERA_PERMISSIONS, cameraPerms);
                     return;
                 }
-                if(currentUserId!=null) {
-                    Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, REQUEST_IMAGE_PIC);
-                }else{
-                    Toast.makeText(UserDetailActivity.this,getString(R.string.error_user_not_signed_in), Toast.LENGTH_SHORT).show();
+                if (currentUserId != null) {
+                    if(fUtil.getCurrentUserId().equals(uId)) {
+                        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(intent, REQUEST_IMAGE_PIC);
+                    }
+                } else {
+                    Toast.makeText(UserDetailActivity.this, getString(R.string.error_user_not_signed_in), Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
@@ -194,13 +214,15 @@ public class UserDetailActivity extends BaseActivity implements
             }
         }
     }
-    public String getPathFromUri(Uri uri){
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null );
+
+    public String getPathFromUri(Uri uri) {
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
         cursor.moveToNext();
-        String path = cursor.getString( cursor.getColumnIndex( "_data" ) );
+        String path = cursor.getString(cursor.getColumnIndex("_data"));
         cursor.close();
         return path;
     }
+
     @Override
     public void onDestroy() {
         // store the data in the fragment
@@ -227,6 +249,7 @@ public class UserDetailActivity extends BaseActivity implements
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this);
     }
+
     @Override
     public void onPermissionsGranted(int requestCode, List<String> perms) {
     }
@@ -234,6 +257,7 @@ public class UserDetailActivity extends BaseActivity implements
     @Override
     public void onPermissionsDenied(int requestCode, List<String> perms) {
     }
+
     @Override
     public void onBitmapResized(Bitmap resizedBitmap, int mMaxDimension) {
         if (resizedBitmap == null) {
