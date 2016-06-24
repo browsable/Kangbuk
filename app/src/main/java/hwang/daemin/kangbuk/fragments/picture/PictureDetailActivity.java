@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.ScrollingTabContainerView;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -434,7 +433,7 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
                 case R.id.action_remove:
-                    if(time==null) {
+                    if(time==0) {
                         if (mPostListener != null) {
                             mPostReference.removeEventListener(mPostListener);
                         }
