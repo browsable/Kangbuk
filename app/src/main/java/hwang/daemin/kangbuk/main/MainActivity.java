@@ -16,17 +16,29 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.google.android.gms.appinvite.AppInvite;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.SignInActivity;
 import hwang.daemin.kangbuk.common.BackPressCloseHandler;
+import hwang.daemin.kangbuk.common.DialDefault;
 import hwang.daemin.kangbuk.common.My;
+import hwang.daemin.kangbuk.data.Bible;
 import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.fragments.BibleFragment;
 import hwang.daemin.kangbuk.fragments.CalendarFragment;
@@ -64,7 +76,6 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
-        fUtil.FirebaseInstanceInit();
         My.INFO.loginType = pref.getInt("loginType",0);
         if(fUtil.firebaseUser==null){
             // Not signed in, launch the Sign In activity
@@ -74,6 +85,7 @@ public class MainActivity extends AppCompatActivity
         }else{
             if( My.INFO.loginType==0|| My.INFO.loginType==1) { //google, facebook
                 My.INFO.name = fUtil.firebaseUser.getDisplayName();
+                if(My.INFO.loginType==1) FacebookSdk.sdkInitialize(getApplicationContext());
             }else if( My.INFO.loginType==2){ //email
                 My.INFO.name = pref.getString("UserName","anonymous");
             }else if( My.INFO.loginType==3){ //anonymous
@@ -92,7 +104,12 @@ public class MainActivity extends AppCompatActivity
                 .build();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
+        FirebaseRemoteConfigSettings firebaseRemoteConfigSettings =
+                new FirebaseRemoteConfigSettings.Builder()
+                        .setDeveloperModeEnabled(true)
+                        .build();
+        fUtil.firebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
+        fetchConfig();
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -106,6 +123,41 @@ public class MainActivity extends AppCompatActivity
         fm.beginTransaction().replace(R.id.content_frame, new MainFragment()).commit();
 
         backPressCloseHandler = new BackPressCloseHandler(this);
+
+        Map<String, Object> bibleRandom = new HashMap<>();
+        Random r = new Random();
+        bibleRandom.put("biblenum",r.nextInt(239));
+        fUtil.databaseReference.child("user").child(fUtil.getCurrentUserId()).updateChildren(bibleRandom);
+
+
+    }
+    public void fetchConfig() {
+        long cacheExpiration = 3600;
+        if (fUtil.firebaseRemoteConfig.getInfo().getConfigSettings()
+                .isDeveloperModeEnabled()) {
+            cacheExpiration = 0;
+        }
+        fUtil.firebaseRemoteConfig.fetch(cacheExpiration)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        fUtil.firebaseRemoteConfig.activateFetched();
+                        String serverVersion = fUtil.firebaseRemoteConfig.getString("appversion");
+                        if (!serverVersion.equals(My.INFO.appVer)){
+                            DialDefault dd = new DialDefault(MainActivity.this,
+                                    getResources().getString(R.string.update_title),
+                                    getResources().getString(R.string.update_notice),
+                                    0);
+                            dd.show();
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        // There has been an error fetching the config
+                    }
+                });
     }
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);

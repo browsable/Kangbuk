@@ -1,6 +1,7 @@
 package hwang.daemin.kangbuk.fragments.picture;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
@@ -10,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
@@ -56,10 +58,11 @@ public class NewPictureActivity extends AppCompatActivity implements
     //public static final String EXTRA_IMAGES = "extraImages";
     private RecyclerView resultRecyclerView;
     private ImageView singleImageView;
+    private ArrayList<Bitmap> mfullBitmaps;
+    private ArrayList<Bitmap> mThumbBitmaps;
     private Bitmap mResizedBitmap;
     private Bitmap mThumbnail;
     private ArrayList<String> images = new ArrayList<>();
-    private ArrayList<String> fullURLList = new ArrayList<>();
     private static final int THUMBNAIL_MAX_DIMENSION = 480;
     private static final int FULL_SIZE_MAX_DIMENSION = 960;
     private static final int RC_CAMERA_PERMISSIONS = 102;
@@ -69,10 +72,13 @@ public class NewPictureActivity extends AppCompatActivity implements
     private NewPicUploadTaskFragment mTaskFragment;
     private String title;
     private String body;
-    private String userId;
-    private User user;
+    private String userId,userName;
+    private int uploadCnt;
+    private ProgressDialog pDialog;
+    private ProgressBar bar;
     private String key;
-    private int imgCnt;
+    private FloatingActionButton btSubmit;
+
     @Override
     public void onDestroy() {
         // store the data in the fragment
@@ -90,7 +96,11 @@ public class NewPictureActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_new_post);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        imgCnt=0;
+        mfullBitmaps=new ArrayList<>();
+        mThumbBitmaps=new ArrayList<>();
+        userId = fUtil.getCurrentUserId();
+        userName = fUtil.getCurrentUserName();
+        bar = (ProgressBar) findViewById(R.id.progressBar);
         mTitleField = (EditText) findViewById(R.id.field_title);
         mBodyField = (EditText) findViewById(R.id.field_body);
         btPicture = (LinearLayout) findViewById(R.id.btPicture);
@@ -98,8 +108,8 @@ public class NewPictureActivity extends AppCompatActivity implements
         singleImageView = (ImageView) findViewById(R.id.single_image);
         resultRecyclerView = (RecyclerView) findViewById(R.id.result_recycler);
         resultRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-
-        findViewById(R.id.fab_submit_post).setOnClickListener(new View.OnClickListener() {
+        btSubmit = (FloatingActionButton) findViewById(R.id.fab_submit_post);
+        btSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(images!=null&&images.size()!=0)
@@ -157,15 +167,24 @@ public class NewPictureActivity extends AppCompatActivity implements
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        btSubmit.setEnabled(false);
         if (resultCode == RESULT_OK && requestCode == ImageSelectorActivity.REQUEST_IMAGE) {
+            mfullBitmaps.clear();
+            mThumbBitmaps.clear();
             images = (ArrayList<String>) data.getSerializableExtra(ImageSelectorActivity.REQUEST_OUTPUT);
-            //startActivity(new Intent(this,SelectResultActivity.class).putExtra(SelectResultActivity.EXTRA_IMAGES,images));
             btPicture.setVisibility(View.GONE);
             llGridView.setVisibility(View.VISIBLE);
+            bar.setVisibility(View.VISIBLE);
+            for(String path: images){
+                mTaskFragment.resizeBitmapWithPath(path,THUMBNAIL_MAX_DIMENSION);
+                mTaskFragment.resizeBitmapWithPath(path,FULL_SIZE_MAX_DIMENSION);
+            }
         }
     }
 
     private void submitPost() {
+        uploadCnt=0;
+        key = fUtil.getPictureRef().push().getKey();
         title = mTitleField.getText().toString();
         body = mBodyField.getText().toString();
 
@@ -173,31 +192,28 @@ public class NewPictureActivity extends AppCompatActivity implements
             mTitleField.setError("제목을 입력하세요");
             return;
         }
+        pDialog = new ProgressDialog(NewPictureActivity.this);
+        pDialog.setMessage("Uploading..");
+        pDialog.setIndeterminate(false);
+        pDialog.setMax(images.size());
+        pDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        pDialog.setCancelable(false);
+        pDialog.show();
 
-        userId = fUtil.getCurrentUserId();
-        fUtil.databaseReference.child("user").child(userId).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    user = dataSnapshot.getValue(User.class);
-                    if (user == null) {
-                        Log.e(TAG, "User " + userId + " is unexpectedly null");
-                        Toast.makeText(NewPictureActivity.this,
-                                "권한이 필요합니다",
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                            String path = images.get(imgCnt);
-                            mTaskFragment.resizeBitmapWithPath(path,THUMBNAIL_MAX_DIMENSION);
-                            mTaskFragment.resizeBitmapWithPath(path,FULL_SIZE_MAX_DIMENSION);
-                    }
-                    finish();
-                }
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                }
-        });
+        uploadPhoto(uploadCnt);
+        /*for(int i =0; i<images.size(); i++) {
+            Long now = System.currentTimeMillis();
+            StorageReference fullSizeRef = fUtil.getStorePictureRef().child(now.toString()).child("full");
+            StorageReference thumbnailRef = fUtil.getStorePictureRef().child(now.toString()).child("thumb");
+            mTaskFragment.uploadPhoto(mfullBitmaps.get(i), fullSizeRef, mThumbBitmaps.get(i), thumbnailRef, now.toString());
+        }*/
     }
-
+    public void uploadPhoto(int uploadCnt){
+        String now = String.valueOf(System.currentTimeMillis());
+        StorageReference fullSizeRef = fUtil.getStorePictureRef().child(key).child(now).child("full");
+        StorageReference thumbnailRef = fUtil.getStorePictureRef().child(key).child(now).child("thumb");
+        mTaskFragment.uploadPhoto(mfullBitmaps.get(uploadCnt), fullSizeRef, mThumbBitmaps.get(uploadCnt), thumbnailRef, now);
+    }
     private class GridAdapter extends RecyclerView.Adapter<GridAdapter.ViewHolder> {
 
         @Override
@@ -262,51 +278,39 @@ public class NewPictureActivity extends AppCompatActivity implements
             }
             if (mMaxDimension == THUMBNAIL_MAX_DIMENSION) {
                 mThumbnail = resizedBitmap;
+                mThumbBitmaps.add(resizedBitmap);
             } else if (mMaxDimension == FULL_SIZE_MAX_DIMENSION) {
                 mResizedBitmap = resizedBitmap;
+                mfullBitmaps.add(resizedBitmap);
             }
 
-            if (mThumbnail != null && mResizedBitmap != null) {
-                Long now = System.currentTimeMillis();
-                StorageReference fullSizeRef = fUtil.getStorePictureRef().child(now.toString()).child("full");
-                StorageReference thumbnailRef = fUtil.getStorePictureRef().child(now.toString()).child("thumb");
-                mTaskFragment.uploadPost(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, now.toString());
-            }
+        if(mfullBitmaps.size()==images.size()) {
+            bar.setVisibility(View.GONE);
+            btSubmit.setEnabled(true);
+        }
     }
-
-    @Override
-    public void onPictureUploaded(final String error, final String fullURL, final String thumbURL) {
+    public void onPhotoUploaded(final String error, final String fullURL, final String thumbURL) {
+        pDialog.setProgress(uploadCnt+1);
         NewPictureActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 if (error != null) {
                     Toast.makeText(NewPictureActivity.this, error, Toast.LENGTH_SHORT).show();
-                }else{
-                    if(imgCnt==0){
-                        key = fUtil.getPictureRef().push().getKey();
-                        Long time = System.currentTimeMillis();
-                        fUtil.getPictureRef().child(key).setValue(new PictureData(userId,user.getuName(),title,body,thumbURL,time));
-                        fUtil.getPictureDetailRef().child(key).push().setValue(fullURL);
-                        String path = images.get(++imgCnt);
-                        mTaskFragment.resizeBitmapWithPath(path, THUMBNAIL_MAX_DIMENSION);
-                        mTaskFragment.resizeBitmapWithPath(path, FULL_SIZE_MAX_DIMENSION);
-                    }else if(imgCnt!=images.size()){
-                        String path = images.get(imgCnt++);
-                        mTaskFragment.resizeBitmapWithPath(path, THUMBNAIL_MAX_DIMENSION);
-                        mTaskFragment.resizeBitmapWithPath(path, FULL_SIZE_MAX_DIMENSION);
-                        fUtil.getPictureDetailRef().child(key).push().setValue(fullURL);
+                    pDialog.dismiss();
+                }else {
+                    if (uploadCnt == 0)
+                        fUtil.getPictureRef().child(key).setValue(new PictureData(userId, userName, title, body, thumbURL, System.currentTimeMillis()));
+                    fUtil.getPictureDetailRef().child(key).push().setValue(fullURL);
+                    if (uploadCnt == images.size() - 1) {
+                        finish();
+                        pDialog.dismiss();
+                    } else {
+                        uploadPhoto(++uploadCnt);
                     }
-                    /*fullURLList.add(fullURL);
-                    Log.i("test",fullURLList.size()+"");*/
-                    /*f(fullURLList.size()==images.size()) {
-
-                    }else{*/
-                    //}
                 }
             }
         });
     }
-
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,

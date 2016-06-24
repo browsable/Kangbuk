@@ -11,6 +11,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -61,23 +62,28 @@ public class PictureFragment extends Fragment {
                 bar.setVisibility(View.GONE);
                 final DatabaseReference postRef = getRef(position);
                 final String postKey = postRef.getKey();
+                final String date = (String) DateUtils.getRelativeTimeSpanString(pic.time);
                 viewHolder.tvTitle.setText(pic.title);
                 viewHolder.tvName.setText(pic.uName);
                 calendar.setTimeInMillis(pic.time);
-                viewHolder.tvDate.setText(calendar.get(Calendar.YEAR)+"."+ calendar.get(Calendar.MONTH)+"."+calendar.get(Calendar.DAY_OF_MONTH));
+                viewHolder.tvDate.setText(date);
                 GlideUtil.loadImage(pic.thumbURL,viewHolder.ivThumb);
                 viewHolder.ivThumb.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(getActivity(), PictureDetailActivity.class);
                         intent.putExtra(PictureDetailActivity.EXTRA_POST_KEY, postKey);
+                        intent.putExtra(PictureDetailActivity.EXTRA_DATE, date);
+                        intent.putExtra(PictureDetailActivity.EXTRA_UID, pic.uid);
                         startActivity(intent);
                     }
                 });
                 viewHolder.ivOverflow.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        showPopupMenu(viewHolder.ivOverflow);
+                    if(fUtil.getCurrentUserId().equals(pic.uid)) {
+                        showPopupMenu(viewHolder.ivOverflow,postKey);
+                    }
                     }
                 });
             }
@@ -107,27 +113,28 @@ public class PictureFragment extends Fragment {
 
         return rootView;
     }
-    private void showPopupMenu(View view) {
+    private void showPopupMenu(View view, String key) {
         // inflate menu
         PopupMenu popup = new PopupMenu(getActivity(), view);
         MenuInflater inflater = popup.getMenuInflater();
         inflater.inflate(R.menu.menu_picture, popup.getMenu());
-        popup.setOnMenuItemClickListener(new MyMenuItemClickListener());
+        popup.setOnMenuItemClickListener(new MyMenuItemClickListener(key));
         popup.show();
     }
     class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
-
-        public MyMenuItemClickListener() {
+        String key;
+        public MyMenuItemClickListener(String key) {
+            this.key=key;
         }
 
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
-                case R.id.action_add_favourite:
-                    Toast.makeText(getActivity(), "Add to favourite", Toast.LENGTH_SHORT).show();
-                    return true;
-                case R.id.action_play_next:
-                    Toast.makeText(getActivity(), "Play next", Toast.LENGTH_SHORT).show();
+                case R.id.action_remove:
+                    fUtil.databaseReference.child("picture/" + key).removeValue();
+                    fUtil.databaseReference.child("picture-comments/" + key).removeValue();
+                    fUtil.databaseReference.child("picture-urls/" + key).removeValue();
+                    fUtil.getStorePictureRef().child(key).delete();
                     return true;
                 default:
             }

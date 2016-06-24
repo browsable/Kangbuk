@@ -29,6 +29,7 @@
     <dimen name="textsize_xs">8sp</dimen>
     <dimen name="textsize_xxs">6sp</dimen>
     <dimen name="textsize_xxxs">4sp</dimen>
+    <dimen name="dialog_bar">48dp</dimen>
 
     <dimen name="icon_top_margin">24dp</dimen>
     <dimen name="icon_bottom_margin">24dp</dimen>

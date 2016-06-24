@@ -18,6 +18,7 @@ package hwang.daemin.kangbuk.main;
 
 import android.Manifest;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -28,6 +29,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -37,32 +39,36 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.HashMap;
 import java.util.List;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.auth.BaseActivity;
+import hwang.daemin.kangbuk.data.Bible;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.fragments.picture.NewPicUploadTaskFragment;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class UserDetailActivity extends BaseActivity implements
         EasyPermissions.PermissionCallbacks,
-        NewPostUploadTaskFragment.TaskCallbacks{
+        NewPicUploadTaskFragment.TaskCallbacks{
     private final String TAG = "UserDetailActivity";
     private static final int THUMBNAIL_MAX_DIMENSION = 480;
     private static final int FULL_SIZE_MAX_DIMENSION = 960;
     private CircleImageView ivProfile;
     private static final int REQUEST_IMAGE_PIC = 1;
     private static final int REQUEST_IMAGE_UPLOAD = 3;
-    public static final String TAG_TASK_FRAGMENT = "newPostUploadTaskFragment";
-    private String currentUserId,currentPhotoPath;
+    public static final String TAG_TASK_FRAGMENT = "NewPicUploadTaskFragment";
+    private String currentUserId;
     private Uri mFileUri;
     private Bitmap mResizedBitmap;
     private Bitmap mThumbnail;
-    private NewPostUploadTaskFragment mTaskFragment;
+    private NewPicUploadTaskFragment mTaskFragment;
     private static final int RC_CAMERA_PERMISSIONS = 102;
     public RequestManager mGlideRequestManager;
+    private TextView tvPos,tvKo,tvEn;
     private static final String[] cameraPerms = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -73,7 +79,6 @@ public class UserDetailActivity extends BaseActivity implements
         setContentView(R.layout.activity_user_detail);
         String uId = getIntent().getStringExtra("uId");
         mGlideRequestManager = Glide.with(UserDetailActivity.this);
-        currentPhotoPath = null;
         currentUserId = fUtil.getCurrentUserId();
         final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -82,6 +87,9 @@ public class UserDetailActivity extends BaseActivity implements
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         collapsingToolbar.setTitle(fUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
+        tvPos = (TextView) findViewById(R.id.tvPos);
+        tvKo = (TextView) findViewById(R.id.tvKo);
+        tvEn = (TextView) findViewById(R.id.tvEn);
 
         try {
             fUtil.databaseReference.child("user").child(uId).addValueEventListener(new ValueEventListener() {
@@ -106,14 +114,39 @@ public class UserDetailActivity extends BaseActivity implements
 
                 }
             });
+            fUtil.databaseReference.child("user").child(uId).child("biblenum").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    Long bibleNum = (Long)dataSnapshot.getValue();
+                    fUtil.databaseReference.child("bible").child(bibleNum.toString()).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            HashMap<String,String> hash =(HashMap) dataSnapshot.getValue();
+                            tvPos.setText(hash.get("본문"));
+                            tvKo.setText(hash.get("한글"));
+                            tvEn.setText(hash.get("영어"));
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+
         }catch (Exception e){}
 
         FragmentManager fm = getSupportFragmentManager();
-        mTaskFragment = (NewPostUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
+        mTaskFragment = (NewPicUploadTaskFragment) fm.findFragmentByTag(TAG_TASK_FRAGMENT);
         // create the fragment and data the first time
         if (mTaskFragment == null) {
             // add the fragment
-            mTaskFragment = new NewPostUploadTaskFragment();
+            mTaskFragment = new NewPicUploadTaskFragment();
             fm.beginTransaction().add(mTaskFragment, TAG_TASK_FRAGMENT).commit();
         }
         Bitmap selectedBitmap = mTaskFragment.getSelectedBitmap();
@@ -155,13 +188,19 @@ public class UserDetailActivity extends BaseActivity implements
                     mFileUri = data.getData();
                 case REQUEST_IMAGE_UPLOAD:
                     showProgressDialog();
-                    mTaskFragment.resizeBitmap(mFileUri, THUMBNAIL_MAX_DIMENSION);
-                    mTaskFragment.resizeBitmap(mFileUri, FULL_SIZE_MAX_DIMENSION);
+                    mTaskFragment.resizeBitmapWithPath(getPathFromUri(mFileUri), THUMBNAIL_MAX_DIMENSION);
+                    mTaskFragment.resizeBitmapWithPath(getPathFromUri(mFileUri), FULL_SIZE_MAX_DIMENSION);
                     break;
             }
         }
     }
-
+    public String getPathFromUri(Uri uri){
+        Cursor cursor = getContentResolver().query(uri, null, null, null, null );
+        cursor.moveToNext();
+        String path = cursor.getString( cursor.getColumnIndex( "_data" ) );
+        cursor.close();
+        return path;
+    }
     @Override
     public void onDestroy() {
         // store the data in the fragment
@@ -217,8 +256,9 @@ public class UserDetailActivity extends BaseActivity implements
             mTaskFragment.uploadProfile(mResizedBitmap, fullSizeRef, mThumbnail, thumbnailRef, "profile.jpg");
         }
     }
+
     @Override
-    public void onProfileUploaded(final String error) {
+    public void onPhotoUploaded(final String error, String fullURL, String thumbURL) {
         UserDetailActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {

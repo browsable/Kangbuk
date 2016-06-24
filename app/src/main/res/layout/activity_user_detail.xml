@@ -71,76 +71,41 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            >
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
+            android:layout_margin="@dimen/margin_xl"
             android:paddingTop="24dp">
-
-            <!--<RelativeLayout
+            <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/textsize_xxl"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/todaybible"/>
+            <TextView
+                android:id="@+id/tvPos"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left|center_vertical"
-                android:layout_marginLeft="20dp">
-                <de.hdodenhof.circleimageview.CircleImageView
-                    android:id="@+id/user_detail_photo"
-                    android:layout_width="@dimen/user_detail_photo_size"
-                    android:layout_height="@dimen/user_detail_photo_size" />
-                <View android:id="@+id/separator"
-                    android:background="@color/user_detail_separator"
-                    android:layout_marginLeft="14dp"
-                    android:layout_marginRight="14dp"
-                    android:layout_width = "1dp"
-                    android:layout_height="@dimen/user_detail_photo_size"
-                    android:layout_toRightOf="@id/user_detail_photo" />
-                <TextView
-                    android:id="@+id/user_num_followers"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/UserStatsTextStyle"
-                    android:text="0 followers"
-                    android:layout_alignParentTop="true"
-                    android:layout_toRightOf="@id/separator" />
-                <TextView
-                    android:id="@+id/user_num_following"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/UserStatsTextStyle"
-                    android:text="0 following"
-                    android:layout_centerVertical="true"
-                    android:layout_toRightOf="@id/separator"
-                    android:layout_below="@id/user_num_followers"/>
-                <TextView
-                    android:id="@+id/user_num_likes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    style="@style/UserStatsTextStyle"
-                    android:layout_alignParentBottom="true"
-                    android:text="0 likes"
-                    android:layout_toRightOf="@id/separator"
-                    android:layout_below="@id/user_num_following"/>
-            </RelativeLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:layout_marginTop="20dp"
-                android:layout_marginLeft="10dp">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="POSTS"/>
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/user_posts_grid"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scrollbars="vertical" />
-                <TextView
-                    android:layout_marginTop="20dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="RECENT ACTIVITY"/>
-            </LinearLayout>-->
+                android:layout_marginTop="@dimen/margin_xl"
+                />
+            <TextView
+                android:id="@+id/tvKo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_xl"
+                />
+            <TextView
+                android:id="@+id/tvEn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin_xl"/>
         </LinearLayout>
+        </ScrollView>
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

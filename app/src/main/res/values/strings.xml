@@ -48,6 +48,7 @@
     <string name="id_fmt">User ID: %s</string>
     <string name="email_fmt">Email: %s</string>
     <string name="anonymous_title_text">익명</string>
+    <string name="remove">삭제</string>
 
     <string name="invitation_message">강북제일침례교회 앱으로 초대합니다!</string>
     <string name="invitation_cta">Call to action</string>
@@ -66,6 +67,11 @@
     <string name="error_upload_task_create">업로드 할 수 없습니다</string>
     <string name="start">GOT IT</string>
     <string name="next">NEXT</string>
+    <string name="todaybible">오늘의 말씀</string>
     <string name="mp3Info"><a href="https://support.google.com/youtube/answer/1696878?topic=2888648&amp;#x26;%38hl=ko">MP3 변환 방법 보러가기</a></string>
-
+    <string name="update_title">업데이트 안내</string>
+    <string name="update_content">업데이트 내역</string>
+    <string name="update_notice">업데이트 버전이 있습니다.\n마켓으로 이동합니다.</string>
+    <string name="btDialCancel">취소</string>
+    <string name="btDialSetting">확인</string>
 </resources>

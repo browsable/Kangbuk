@@ -1,13 +1,18 @@
 package hwang.daemin.kangbuk.fragments.picture;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.ScrollingTabContainerView;
 import android.text.TextUtils;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -34,19 +39,22 @@ import hwang.daemin.kangbuk.data.Comment;
 import hwang.daemin.kangbuk.data.PictureData;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.main.UserDetailActivity;
 
 public class PictureDetailActivity extends BaseActivity implements View.OnClickListener {
 
     private static final String TAG = "PictureDetailActivity";
 
     public static final String EXTRA_POST_KEY = "post_key";
+    public static final String EXTRA_DATE = "date";
+    public static final String EXTRA_UID = "uId";
 
     private DatabaseReference mPostReference;
     private DatabaseReference mCommentsReference;
     private ValueEventListener mPostListener;
     private String mPostKey;
     private CommentAdapter mAdapter;
-
+    private TextView tvDate;
     private TextView mAuthorView;
     private TextView mTitleView;
     private TextView mBodyView;
@@ -55,15 +63,23 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
     private RecyclerView mCommentsRecycler;
     private RecyclerView photoRecycler;
     private ScrollView sv;
+    private String date;
+    private ImageView ivProfile;
+    private ImageView ivOverflow;
     FirebaseRecyclerAdapter<String,
             PhotoViewHolder> mFirebaseAdapter;
+    String thumbPhotoURL,uId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         sv = (ScrollView) findViewById(R.id.sv);
         mPostKey = getIntent().getStringExtra(EXTRA_POST_KEY);
+        date =  getIntent().getStringExtra(EXTRA_DATE);
+        uId = getIntent().getStringExtra(EXTRA_UID);
+
         if (mPostKey == null) {
             throw new IllegalArgumentException("Must pass EXTRA_POST_KEY");
         }
@@ -73,11 +89,41 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
         mCommentsReference = fUtil.databaseReference.child("picture-comments").child(mPostKey);
 
         // Initialize Views
+        tvDate = (TextView) findViewById(R.id.tvDate);
         mAuthorView = (TextView) findViewById(R.id.post_author);
         mTitleView = (TextView) findViewById(R.id.post_title);
         mBodyView = (TextView) findViewById(R.id.post_body);
+        ivProfile = (ImageView) findViewById(R.id.ivProfile);
+        ivOverflow = (ImageView) findViewById(R.id.ivOverflow);
+        fUtil.databaseReference.child("user/" + uId + "/thumbPhotoURL/").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                thumbPhotoURL = (String) dataSnapshot.getValue();
+                GlideUtil.loadProfileIcon(thumbPhotoURL, ivProfile);
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+        ivProfile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(PictureDetailActivity.this, UserDetailActivity.class);
+                i.putExtra("uId",uId);
+                startActivity(i);
+            }
+        });
+        ivOverflow.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(fUtil.getCurrentUserId().equals(uId)) {
+                    showPopupMenu(ivOverflow, 0);
+                }
+            }
+        });
         photoRecycler = (RecyclerView) findViewById(R.id.recycler_photo);
         photoRecycler.setLayoutManager(new LinearLayoutManager(this));
+        tvDate.setText(date);
 
         mFirebaseAdapter = new FirebaseRecyclerAdapter<String,
                 PhotoViewHolder>(
@@ -92,6 +138,13 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
                 GlideUtil.loadImage(fullURL, viewHolder.ivPhoto);
             }
         };
+        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                super.onChanged();
+                mFirebaseAdapter.notifyDataSetChanged();
+            }
+        });
         photoRecycler.setAdapter(mFirebaseAdapter);
         photoRecycler.setNestedScrollingEnabled(false);
         mCommentField = (EditText) findViewById(R.id.field_comment_text);
@@ -108,6 +161,11 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
             super(v);
             ivPhoto = (ImageView) itemView.findViewById(R.id.ivPhoto);
         }
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        finish();
+        return super.onSupportNavigateUp();
     }
     @Override
     public void onStart() {
@@ -175,9 +233,10 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     User user = dataSnapshot.getValue(User.class);
                     String authorName = user.getuName();
+                    Long now = System.currentTimeMillis();
                     String commentText = mCommentField.getText().toString();
-                    Comment comment = new Comment(uid, authorName, commentText);
-                    mCommentsReference.push().setValue(comment);
+                    Comment comment = new Comment(uid, authorName, commentText,now);
+                    mCommentsReference.child(now.toString()).setValue(comment);
                     mCommentField.setText(null);
                 }
                 @Override
@@ -190,16 +249,22 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
 
         public TextView authorView;
         public TextView bodyView;
+        public TextView tvDate;
+        public ImageView ivProfile;
+        public ImageView ivOverflow;
 
         public CommentViewHolder(View itemView) {
             super(itemView);
 
             authorView = (TextView) itemView.findViewById(R.id.comment_author);
             bodyView = (TextView) itemView.findViewById(R.id.comment_body);
+            tvDate = (TextView) itemView.findViewById(R.id.tvDate);
+            ivProfile = (ImageView) itemView.findViewById(R.id.ivProfile);
+            ivOverflow = (ImageView) itemView.findViewById(R.id.ivOverflow);
         }
     }
 
-    private static class CommentAdapter extends RecyclerView.Adapter<CommentViewHolder> {
+    private class CommentAdapter extends RecyclerView.Adapter<CommentViewHolder> {
 
         private Context mContext;
         private DatabaseReference mDatabaseReference;
@@ -277,7 +342,6 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
                     // displaying this comment and if so move it.
                     Comment movedComment = dataSnapshot.getValue(Comment.class);
                     String commentKey = dataSnapshot.getKey();
-
                     // ...
                 }
 
@@ -304,9 +368,40 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
 
         @Override
         public void onBindViewHolder(CommentViewHolder holder, int position) {
-            Comment comment = mComments.get(position);
-            holder.authorView.setText(comment.author);
-            holder.bodyView.setText(comment.text);
+            final CommentViewHolder viewHolder = holder;
+            final Comment comment = mComments.get(position);
+            viewHolder.authorView.setText(comment.author);
+            viewHolder.bodyView.setText(comment.text);
+            viewHolder.tvDate.setText(DateUtils.getRelativeTimeSpanString(comment.time));
+            final String comentId = comment.uid;
+            fUtil.databaseReference.child("user/" + comentId + "/thumbPhotoURL/").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    thumbPhotoURL = (String) dataSnapshot.getValue();
+                    GlideUtil.loadProfileIcon(thumbPhotoURL, viewHolder.ivProfile);
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                }
+            });
+
+            if(fUtil.getCurrentUserId().equals(comentId)) {
+                viewHolder.ivOverflow.setVisibility(View.VISIBLE);
+                viewHolder.ivOverflow.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        showPopupMenu(viewHolder.ivOverflow, comment.time);
+                    }
+                });
+            }
+            viewHolder.ivProfile.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(PictureDetailActivity.this, UserDetailActivity.class);
+                    i.putExtra("uId",comentId);
+                    startActivity(i);
+                }
+            });
         }
 
         @Override
@@ -320,5 +415,43 @@ public class PictureDetailActivity extends BaseActivity implements View.OnClickL
             }
         }
 
+    }
+    private void showPopupMenu(View view, long time) {
+        // inflate menu
+        PopupMenu popup = new PopupMenu(PictureDetailActivity.this, view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_picture, popup.getMenu());
+        popup.setOnMenuItemClickListener(new MyMenuItemClickListener(time));
+        popup.show();
+    }
+    class MyMenuItemClickListener implements PopupMenu.OnMenuItemClickListener {
+        Long time;
+        public MyMenuItemClickListener(Long time) {
+            this.time = time;
+        }
+
+        @Override
+        public boolean onMenuItemClick(MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+                case R.id.action_remove:
+                    if(time==null) {
+                        if (mPostListener != null) {
+                            mPostReference.removeEventListener(mPostListener);
+                        }
+                        // Clean up comments listener
+                        mAdapter.cleanupListener();
+                        finish();
+                        fUtil.databaseReference.child("picture/" + mPostKey).removeValue();
+                        fUtil.databaseReference.child("picture-comments/" + mPostKey).removeValue();
+                        fUtil.databaseReference.child("picture-urls/" + mPostKey).removeValue();
+                        fUtil.getStorePictureRef().child(mPostKey).delete();
+                        return true;
+                    }else{
+                        fUtil.databaseReference.child("picture-comments/" + mPostKey+"/"+time.toString()).removeValue();
+                    }
+                default:
+            }
+            return false;
+        }
     }
 }

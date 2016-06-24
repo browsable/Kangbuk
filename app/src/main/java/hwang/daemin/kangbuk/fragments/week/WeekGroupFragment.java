@@ -84,7 +84,6 @@ public class WeekGroupFragment extends Fragment {
                         tmpThumbPhotoURL = (String) dataSnapshot.getValue();
                         GlideUtil.loadProfileIcon(tmpThumbPhotoURL, viewHol.messengerImageView);
                     }
-
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                     }

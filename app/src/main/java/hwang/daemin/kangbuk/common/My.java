@@ -1,5 +1,4 @@
 package hwang.daemin.kangbuk.common;
-
 /**
  * Created by hernia on 2015-06-27.
  */

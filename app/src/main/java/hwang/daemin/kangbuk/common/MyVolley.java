@@ -5,6 +5,8 @@ import android.content.Context;
 import com.android.volley.Cache;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.HttpClientStack;
+import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.ImageLoader.ImageCache;
 import com.android.volley.toolbox.NoCache;
@@ -29,11 +31,10 @@ public class MyVolley {
 
         Cache diskCache = getDefaultDiskCache(context);
         ImageCache memoryCache = getDefaultImageCache(context);
+
         requestQueue = new RequestQueue(diskCache, new BasicNetwork(
                 new OkHttpStack()));
-
         imageLoader = new ImageLoader(requestQueue, memoryCache);
-
         requestQueue.start();
     }
 

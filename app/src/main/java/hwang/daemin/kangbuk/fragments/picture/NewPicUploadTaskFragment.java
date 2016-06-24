@@ -16,9 +16,7 @@
 
 package hwang.daemin.kangbuk.fragments.picture;
 
-import android.content.ContentUris;
 import android.content.Context;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -26,7 +24,6 @@ import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -47,7 +44,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
@@ -58,14 +54,13 @@ public class NewPicUploadTaskFragment extends Fragment {
 
     public interface TaskCallbacks {
         void onBitmapResized(Bitmap bitmap, int mMaxDimension);
-        void onPictureUploaded(String error, String fullURL, String thumbURL);
+        void onPhotoUploaded(String error,String fullURL,String thumbURL);
     }
 
     private Context mApplicationContext;
     private TaskCallbacks mCallbacks;
     private Bitmap selectedBitmap;
     private Bitmap thumbnail;
-    private boolean firstFlag;
 
     public NewPicUploadTaskFragment() {
         // Required empty public constructor
@@ -88,7 +83,6 @@ public class NewPicUploadTaskFragment extends Fragment {
                     + " must implement TaskCallbacks");
         }
         mApplicationContext = getActivity().getApplicationContext();
-        firstFlag = true;
     }
 
     public void setSelectedBitmap(Bitmap bitmap) {
@@ -108,25 +102,90 @@ public class NewPicUploadTaskFragment extends Fragment {
     }
 
     public void resizeBitmapWithPath(String path, int maxDimension) {
-        Uri fileUri = getUriFromPath(path);
-        LoadResizedBitmapTask task = new LoadResizedBitmapTask(fileUri, path, maxDimension);
+        LoadResizedBitmapTask task = new LoadResizedBitmapTask(path, maxDimension);
         task.execute();
     }
-
-    public void uploadPost(Bitmap bitmap, StorageReference inBitmapRef, Bitmap thumbnail, StorageReference inThumbnailRef,
-                           String inFileName) {
-        UploadPostTask uploadTask = new UploadPostTask(bitmap, inBitmapRef, thumbnail, inThumbnailRef, inFileName);
+    public void uploadPhoto(Bitmap full, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef, String inFileName) {
+        UploadPhotoTask uploadTask = new UploadPhotoTask(full,fullRef,thumbnail,thumbRef,inFileName);
+        uploadTask.execute();
+    }
+    public void uploadProfile(Bitmap full, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef, String inFileName) {
+        UploadProfileTask uploadTask = new UploadProfileTask(full,fullRef,thumbnail,thumbRef,inFileName);
         uploadTask.execute();
     }
 
-    class UploadPostTask extends AsyncTask<Void, Void, Void> {
+    class UploadPhotoTask extends AsyncTask<Void, Void, Void> {
+        private WeakReference<Bitmap> fullReference;
+        private StorageReference fullSizeRef;
+        private WeakReference<Bitmap> thumbReference;
+        private StorageReference thumbSizeRef;
+
+        public UploadPhotoTask(Bitmap full, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef, String inFileName) {
+            fullReference = new WeakReference<>(full);
+            fullSizeRef = fullRef.child(inFileName);
+            thumbReference = new WeakReference<>(thumbnail);
+            thumbSizeRef = thumbRef.child(inFileName);
+        }
+
+        @Override
+        protected void onPreExecute() {
+
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Bitmap fullSize = fullReference.get();
+            if (fullSize == null) {
+                return null;
+            }
+            ByteArrayOutputStream fullSizeStream = new ByteArrayOutputStream();
+            fullSize.compress(Bitmap.CompressFormat.JPEG, 90, fullSizeStream);
+            byte[] bytes = fullSizeStream.toByteArray();
+            fullSizeRef.putBytes(bytes).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    final Uri fullSizeUrl = taskSnapshot.getDownloadUrl();
+                    Bitmap thumbnail = thumbReference.get();
+                    if (thumbnail == null) {
+                        return;
+                    }
+                    ByteArrayOutputStream thumbnailStream = new ByteArrayOutputStream();
+                    thumbnail.compress(Bitmap.CompressFormat.JPEG, 70, thumbnailStream);
+                    thumbSizeRef.putBytes(thumbnailStream.toByteArray())
+                            .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
+                                    mCallbacks.onPhotoUploaded(null,fullSizeUrl.toString(), thumbnailUrl.toString());
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            mCallbacks.onPhotoUploaded(mApplicationContext.getString(
+                                    R.string.error_upload_task_create),null,null);
+                        }
+                    });
+
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    mCallbacks.onPhotoUploaded(mApplicationContext.getString(
+                            R.string.error_upload_task_create),null, null);
+                }
+            });
+            // TODO: Refactor these insanely nested callbacks.
+            return null;
+        }
+    }
+    class UploadProfileTask extends AsyncTask<Void, Void, Void> {
         private WeakReference<Bitmap> bitmapReference;
         private WeakReference<Bitmap> thumbnailReference;
         private StorageReference fullSizeRef;
         private StorageReference thumbnailRef;
 
-        public UploadPostTask(Bitmap bitmap, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef,
-                              String inFileName) {
+        public UploadProfileTask(Bitmap bitmap, StorageReference fullRef, Bitmap thumbnail, StorageReference thumbRef,
+                                 String inFileName) {
             bitmapReference = new WeakReference<>(bitmap);
             thumbnailReference = new WeakReference<>(thumbnail);
             fullSizeRef = fullRef.child(inFileName);
@@ -161,33 +220,40 @@ public class NewPicUploadTaskFragment extends Fragment {
 
                                     final Uri thumbnailUrl = taskSnapshot.getDownloadUrl();
                                     if (fUtil.firebaseUser == null) {
-                                        mCallbacks.onPictureUploaded(mApplicationContext.getString(
-                                                R.string.error_user_not_signed_in), null, null);
+                                        mCallbacks.onPhotoUploaded(mApplicationContext.getString(
+                                                R.string.error_user_not_signed_in),null,null);
                                         return;
                                     }
-                                    if (firstFlag) {
-                                        mCallbacks.onPictureUploaded(null, fullSizeUrl.toString(), thumbnailUrl.toString());
-                                        firstFlag = false;
-                                    } else
-                                        mCallbacks.onPictureUploaded(null, fullSizeUrl.toString(), null);
+                                    UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
+                                            .setPhotoUri(thumbnailUrl)
+                                            .build();
 
+                                    fUtil.firebaseUser.updateProfile(profileUpdates)
+                                            .addOnCompleteListener(new OnCompleteListener<Void>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<Void> task) {
+                                                    if (task.isSuccessful()) {
+                                                        Log.d(TAG, "User profile updated.");
+                                                    }
+                                                }
+                                            });
+                                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid())
+                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString()));
+                                    mCallbacks.onPhotoUploaded(null,null,null);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-
-                            mCallbacks.onPictureUploaded(mApplicationContext.getString(
-                                    R.string.error_upload_task_create), null, null);
+                            mCallbacks.onPhotoUploaded(mApplicationContext.getString(
+                                    R.string.error_user_not_signed_in),null,null);
                         }
                     });
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                  /*  FirebaseCrash.logcat(Log.ERROR, TAG, "Failed to upload post to database.");
-                    FirebaseCrash.report(e);*/
-                    mCallbacks.onPictureUploaded(mApplicationContext.getString(
-                            R.string.error_upload_task_create), null, null);
+                    mCallbacks.onPhotoUploaded(mApplicationContext.getString(
+                            R.string.error_user_not_signed_in),null,null);
                 }
             });
             // TODO: Refactor these insanely nested callbacks.
@@ -197,23 +263,21 @@ public class NewPicUploadTaskFragment extends Fragment {
     class LoadResizedBitmapTask extends AsyncTask<Void, Void, Bitmap> {
         private int mMaxDimension;
         private String filePath;
-        private Uri fileUri;
 
-        public LoadResizedBitmapTask(Uri fileUri, String filePath, int maxDimension) {
+        public LoadResizedBitmapTask(String filePath, int maxDimension) {
             mMaxDimension = maxDimension;
             this.filePath =filePath;
-            this.fileUri = fileUri;
         }
 
         // Decode image in background.
         @Override
         protected Bitmap doInBackground(Void... params) {
-                if (fileUri != null) {
+                if (filePath != null) {
                     // TODO: Currently making these very small to investigate modulefood bug.
                     // Implement thumbnail + fullsize later.
                     Bitmap adjustedBitmap = null;
                     try {
-                        Bitmap bitmap = decodeSampledBitmapFromPath(fileUri, mMaxDimension, mMaxDimension);
+                        Bitmap bitmap = decodeSampledBitmapFromPath(filePath, mMaxDimension, mMaxDimension);
                         ExifInterface exif = new ExifInterface(filePath);
                         int rotation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
                         int exifDegree = exifOrientationToDegrees(rotation);
@@ -239,19 +303,6 @@ public class NewPicUploadTaskFragment extends Fragment {
         }
     }
 
-    public Uri getUriFromPath(String path) {
-        String fileName = path;
-        Uri fileUri = Uri.parse(fileName);
-        String filePath = fileUri.getPath();
-        Cursor cursor = mApplicationContext.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                null, "_data = '" + filePath + "'", null, null);
-        cursor.moveToNext();
-        int id = cursor.getInt(cursor.getColumnIndex("_id"));
-        Uri uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id);
-        cursor.close();
-        return uri;
-    }
-
     public static int calculateInSampleSize(
             BitmapFactory.Options options, int reqWidth, int reqHeight) {
         // Raw height and width of image
@@ -275,10 +326,12 @@ public class NewPicUploadTaskFragment extends Fragment {
         return inSampleSize;
     }
 
-    public Bitmap decodeSampledBitmapFromPath(Uri fileUri, int reqWidth, int reqHeight)
+    public Bitmap decodeSampledBitmapFromPath(String filePath, int reqWidth, int reqHeight)
             throws IOException {
-        InputStream stream = new BufferedInputStream(
-                mApplicationContext.getContentResolver().openInputStream(fileUri));
+        File file = new File(filePath);
+        InputStream stream = new BufferedInputStream(new FileInputStream(file));
+        /*InputStream stream = new BufferedInputStream(
+                mApplicationContext.getContentResolver().openInputStream(fileUri));*/
         stream.mark(stream.available());
         BitmapFactory.Options options = new BitmapFactory.Options();
         // First decode with inJustDecodeBounds=true to check dimensions

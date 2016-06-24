@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="hwang.daemin.kangbuk">
+    package="hwang.daemin.kangbuk"
+    android:versionCode="10"
+    android:versionName="1.1.0">
 
     <application
         android:name=".common.AppController"
@@ -37,8 +39,7 @@
         <activity android:name=".auth.EmailPasswordActivity" />
         <activity android:name=".auth.FacebookLoginActivity" />
         <activity android:name=".fragments.picture.NewPictureActivity"/>
-        <activity android:name=".fragments.picture.PictureDetailActivity"
-            android:windowSoftInputMode="stateVisible|adjustResize"/>
+        <activity android:name=".fragments.picture.PictureDetailActivity"/>
         <activity
             android:name=".fragments.file.YoutubeInfoActivity"
             android:theme="@style/AppTheme.NoActionBar"/>

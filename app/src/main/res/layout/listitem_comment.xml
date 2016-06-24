@@ -7,11 +7,11 @@
     android:paddingTop="@dimen/margin_xs"
     android:paddingBottom="@dimen/margin_xs"
     xmlns:tools="http://schemas.android.com/tools">
-    
-    <ImageView
-        android:id="@+id/comment_photo"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:id="@+id/ivProfile"
         android:layout_centerVertical="true"
         android:src="@drawable/ic_account_circle_black_36dp"/>
 
@@ -21,22 +21,39 @@
         android:orientation="vertical"
         android:layout_marginLeft="10dp"
         android:padding="5dp"
-        android:layout_toRightOf="@+id/comment_photo">
+        android:layout_toRightOf="@+id/ivProfile">
+
+        <TextView
+            android:id="@+id/comment_body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/comment_author"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textStyle="bold"
-            tools:text="John Doe" />
-
-        <TextView
-            android:id="@+id/comment_body"
-            style="@style/TextAppearance.AppCompat.Small"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="This is the comment text.."/>
+            android:textSize="@dimen/margin_default"
+            />
 
     </LinearLayout>
-
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin_xxxs"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/ivOverflow"
+        android:layout_marginRight="@dimen/margin_s"
+        android:textSize="@dimen/textsize_s"
+        />
+    <ImageView
+        android:id="@+id/ivOverflow"
+        android:layout_width="@dimen/ic_album_overflow_width"
+        android:layout_height="@dimen/ic_album_overflow_height"
+        android:scaleType="centerCrop"
+        android:visibility="invisible"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_dots" />
 </RelativeLayout>

@@ -16,10 +16,12 @@
 
 package hwang.daemin.kangbuk.auth;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.multidex.MultiDex;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -50,7 +52,11 @@ public class AnonymousAuthActivity extends BaseActivity implements
     // [START declare_auth_listener]
     private FirebaseAuth.AuthStateListener mAuthListener;
     // [END declare_auth_listener]
-
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

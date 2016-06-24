@@ -17,11 +17,13 @@
 package hwang.daemin.kangbuk.auth;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.multidex.MultiDex;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -80,6 +82,11 @@ public class EmailPasswordActivity extends BaseActivity implements
         // [END auth_state_listener]
     }
 
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
     // [START on_start_add_listener]
     @Override
     public void onStart() {
