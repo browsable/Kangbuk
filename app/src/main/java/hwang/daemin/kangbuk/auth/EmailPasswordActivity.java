@@ -125,17 +125,15 @@ public class EmailPasswordActivity extends AppCompatActivity implements
                             Toast.makeText(EmailPasswordActivity.this, getString(R.string.auth_creat_failed),
                                     Toast.LENGTH_SHORT).show();
                         }else{
+                            finish();
                             SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
                             pref.edit().putInt("loginType",2).apply();
                             fUtil.firebaseUser = task.getResult().getUser();
                             Random r = new Random();
                             String bibleNum = String.valueOf(r.nextInt(239));
                             fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User(name,null,null,bibleNum));
-                            Intent i = new Intent(EmailPasswordActivity.this, MainActivity.class);
-                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(i);
-                            finish();
+                            startActivity( new Intent(EmailPasswordActivity.this, MainActivity.class));
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         }
                         // [START_EXCLUDE]
                         bar.setVisibility(View.GONE);
@@ -169,9 +167,10 @@ public class EmailPasswordActivity extends AppCompatActivity implements
                             Toast.makeText(EmailPasswordActivity.this, getString(R.string.auth_sigin_failed),
                                     Toast.LENGTH_SHORT).show();
                         }else{
-                            SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
-                            pref.edit().putInt("loginType",2).commit();
                             finish();
+                            SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
+                            pref.edit().putInt("loginType",2).apply();
+                            fUtil.firebaseUser = task.getResult().getUser();
                             startActivity(new Intent(EmailPasswordActivity.this, MainActivity.class));
                             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         }

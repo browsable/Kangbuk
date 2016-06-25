@@ -44,10 +44,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
-import java.util.Random;
+import java.util.HashMap;
+import java.util.Map;
 
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
 
 public class NewPicUploadTaskFragment extends Fragment {
@@ -238,10 +238,10 @@ public class NewPicUploadTaskFragment extends Fragment {
                                                     }
                                                 }
                                             });
-                                    Random r = new Random();
-                                    String bibleNum = String.valueOf(r.nextInt(239));
-                                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid())
-                                            .setValue(new User(fUtil.firebaseUser.getDisplayName(),fullSizeUrl.toString(),thumbnailUrl.toString(),bibleNum));
+                                    Map<String, Object> children = new HashMap<>();
+                                    children.put("fullPhotoURL", fullSizeUrl.toString());
+                                    children.put("thumbPhotoURL",thumbnailUrl.toString());
+                                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).updateChildren(children);
                                     mCallbacks.onPhotoUploaded(null,null,null);
                                 }
                             }).addOnFailureListener(new OnFailureListener() {

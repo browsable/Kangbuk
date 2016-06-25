@@ -30,6 +30,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -49,7 +50,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
-import hwang.daemin.kangbuk.fragments.picture.NewPicUploadTaskFragment;
+import hwang.daemin.kangbuk.fragments.picture.*;
 import pub.devrel.easypermissions.EasyPermissions;
 
 public class UserDetailActivity extends AppCompatActivity implements
@@ -72,6 +73,7 @@ public class UserDetailActivity extends AppCompatActivity implements
     private TextView tvPos, tvKo, tvEn;
     private String bibleNum;
     private ProgressBar bar;
+    private Button btAddProfile;
     private static final String[] cameraPerms = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -90,6 +92,7 @@ public class UserDetailActivity extends AppCompatActivity implements
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         collapsingToolbar.setTitle(fUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
+        btAddProfile = (Button) findViewById(R.id.btAddProfile);
         bar = (ProgressBar) findViewById(R.id.progressBar);
         tvPos = (TextView) findViewById(R.id.tvPos);
         tvKo = (TextView) findViewById(R.id.tvKo);
@@ -182,24 +185,33 @@ public class UserDetailActivity extends AppCompatActivity implements
         ivProfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                        && !EasyPermissions.hasPermissions(UserDetailActivity.this, cameraPerms)) {
-                    EasyPermissions.requestPermissions(this,
-                            "사진 업로드를 위해 저장소에 접근합니다",
-                            RC_CAMERA_PERMISSIONS, cameraPerms);
-                    return;
-                }
-                if (currentUserId != null) {
-                    if(fUtil.getCurrentUserId().equals(uId)) {
-                        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                        startActivityForResult(intent, REQUEST_IMAGE_PIC);
-                    }
-                } else {
-                    Toast.makeText(UserDetailActivity.this, getString(R.string.error_user_not_signed_in), Toast.LENGTH_SHORT).show();
-                }
+                Intent i = new Intent(UserDetailActivity.this,DetailActivity.class);
+                i.putExtra("uId",uId);
+                startActivity(i);
             }
         });
+        if(fUtil.getCurrentUserId().equals(uId)) {
+            btAddProfile.setVisibility(View.VISIBLE);
+            btAddProfile.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                            && !EasyPermissions.hasPermissions(UserDetailActivity.this, cameraPerms)) {
+                        EasyPermissions.requestPermissions(this,
+                                "사진 업로드를 위해 저장소에 접근합니다",
+                                RC_CAMERA_PERMISSIONS, cameraPerms);
+                        return;
+                    }
+                    if (currentUserId != null) {
+                        Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        startActivityForResult(intent, REQUEST_IMAGE_PIC);
+                    } else {
+                        Toast.makeText(UserDetailActivity.this, getString(R.string.error_user_not_signed_in), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
 
     }
 

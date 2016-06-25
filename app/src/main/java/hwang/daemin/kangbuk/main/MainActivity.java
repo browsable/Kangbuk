@@ -23,9 +23,9 @@ import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -81,12 +81,24 @@ public class MainActivity extends AppCompatActivity
                 .build();
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FirebaseRemoteConfigSettings firebaseRemoteConfigSettings =
-                new FirebaseRemoteConfigSettings.Builder()
-                        .setDeveloperModeEnabled(true)
-                        .build();
-        fUtil.firebaseRemoteConfig.setConfigSettings(firebaseRemoteConfigSettings);
-        fetchConfig();
+        fUtil.databaseReference.child("appversion").child("version").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                String serverVersion = (String) dataSnapshot.getValue();
+                if(serverVersion==null) return;
+                if (!serverVersion.equals(My.INFO.appVer)){
+                    DialDefault dd = new DialDefault(MainActivity.this,
+                            getResources().getString(R.string.update_title),
+                            getResources().getString(R.string.update_notice),
+                            0);
+                    dd.show();
+                }
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -104,36 +116,9 @@ public class MainActivity extends AppCompatActivity
         Map<String, Object> bibleRandom = new HashMap<>();
         Random r = new Random();
         bibleRandom.put("biblenum",String.valueOf(r.nextInt(239)));
-        fUtil.databaseReference.child("user").child(fUtil.getCurrentUserId()).updateChildren(bibleRandom);
+        fUtil.databaseReference.child("user").child(fUtil.firebaseUser.getUid()).updateChildren(bibleRandom);
     }
-    public void fetchConfig() {
-        long cacheExpiration = 3600;
-        if (fUtil.firebaseRemoteConfig.getInfo().getConfigSettings()
-                .isDeveloperModeEnabled()) {
-            cacheExpiration = 0;
-        }
-        fUtil.firebaseRemoteConfig.fetch(cacheExpiration)
-                .addOnSuccessListener(new OnSuccessListener<Void>() {
-                    @Override
-                    public void onSuccess(Void aVoid) {
-                        fUtil.firebaseRemoteConfig.activateFetched();
-                        String serverVersion = fUtil.firebaseRemoteConfig.getString("appversion");
-                        if (!serverVersion.equals(My.INFO.appVer)){
-                            DialDefault dd = new DialDefault(MainActivity.this,
-                                    getResources().getString(R.string.update_title),
-                                    getResources().getString(R.string.update_notice),
-                                    0);
-                            dd.show();
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        // There has been an error fetching the config
-                    }
-                });
-    }
+
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
