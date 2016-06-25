@@ -137,10 +137,8 @@ public class AnonymousAuthActivity extends AppCompatActivity implements
                             Random r = new Random();
                             String bibleNum = String.valueOf(r.nextInt(239));
                             fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User("anonymous",null,null,bibleNum));
-                            Intent i = new Intent(AnonymousAuthActivity.this, MainActivity.class);
-                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(i);
+                            startActivity(new Intent(AnonymousAuthActivity.this, MainActivity.class));
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         }
 
                         // [START_EXCLUDE]

@@ -85,13 +85,6 @@ public class FacebookLoginActivity extends AppCompatActivity{
                 if (fUtil.firebaseUser != null) {
                     // My is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + fUtil.firebaseUser.getUid());
-                    SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
-                    pref.edit().putInt("loginType",1).apply();
-                    Intent i = new Intent(FacebookLoginActivity.this, MainActivity.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(i);
-                    finish();
                 } else {
                     // My is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -194,9 +187,8 @@ public class FacebookLoginActivity extends AppCompatActivity{
                             fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User(fUtil.firebaseUser.getDisplayName(),null,null,bibleNum));
                             Intent i = new Intent(FacebookLoginActivity.this, MainActivity.class);
                             i.putExtra("uId", fUtil.firebaseUser.getUid());
-                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(i);
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         }
                         // [START_EXCLUDE]
                         bar.setVisibility(View.GONE);

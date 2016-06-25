@@ -2,14 +2,10 @@ package hwang.daemin.kangbuk.fragments.picture;
 
 import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.ContentUris;
 import android.content.Intent;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.FragmentManager;
@@ -41,7 +37,6 @@ import java.util.List;
 
 import hwang.daemin.kangbuk.R;
 import hwang.daemin.kangbuk.data.PictureData;
-import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -99,7 +94,6 @@ public class NewPictureActivity extends AppCompatActivity implements
         mfullBitmaps=new ArrayList<>();
         mThumbBitmaps=new ArrayList<>();
         userId = fUtil.getCurrentUserId();
-        userName = fUtil.getCurrentUserName();
         bar = (ProgressBar) findViewById(R.id.progressBar);
         mTitleField = (EditText) findViewById(R.id.field_title);
         mBodyField = (EditText) findViewById(R.id.field_body);
@@ -109,6 +103,16 @@ public class NewPictureActivity extends AppCompatActivity implements
         resultRecyclerView = (RecyclerView) findViewById(R.id.result_recycler);
         resultRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         btSubmit = (FloatingActionButton) findViewById(R.id.fab_submit_post);
+        fUtil.databaseReference.child("user").child(userId).child("uName").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                userName = (String)dataSnapshot.getValue();
+                if(userName==null) userName = "anonymous";
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
         btSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

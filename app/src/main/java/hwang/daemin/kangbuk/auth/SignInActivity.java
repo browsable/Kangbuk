@@ -77,15 +77,19 @@ public class SignInActivity extends AppCompatActivity implements
                 signIn();
                 break;
             case R.id.btFacebook:
+                finish();
                 startActivity(new Intent(this, FacebookLoginActivity.class));
                 break;
             case R.id.btEmail:
+                finish();
                 startActivity(new Intent(this, EmailPasswordActivity.class));
                 break;
             case R.id.btAnonymous:
+                finish();
                 startActivity(new Intent(this, AnonymousAuthActivity.class));
                 break;
         }
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 
     private void signIn(){
@@ -117,17 +121,15 @@ public class SignInActivity extends AppCompatActivity implements
                     Log.w(TAG,"signInWithCredentail", task.getException());
                     Toast.makeText(SignInActivity.this, getString(R.string.auth_sigin_failed), Toast.LENGTH_SHORT).show();
                 }else{
+                    finish();
                     SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
                     pref.edit().putInt("loginType",0).apply();
                     fUtil.firebaseUser = task.getResult().getUser();
                     Random r = new Random();
                     String bibleNum = String.valueOf(r.nextInt(239));
                     fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User(fUtil.firebaseUser.getDisplayName(),null,null,bibleNum));
-                    Intent i = new Intent(SignInActivity.this, MainActivity.class);
-                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(i);
-                    finish();
+                    startActivity(new Intent(SignInActivity.this, MainActivity.class));
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                 }
             }
         });

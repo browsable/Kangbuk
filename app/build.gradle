@@ -8,7 +8,7 @@ android {
         applicationId "hwang.daemin.kangbuk"
         minSdkVersion 11
         targetSdkVersion 23
-        versionCode 15
+        versionCode 17
         versionName "1.1.1"
         multiDexEnabled true
     }

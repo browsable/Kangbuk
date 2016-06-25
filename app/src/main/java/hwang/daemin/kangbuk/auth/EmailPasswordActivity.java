@@ -172,10 +172,8 @@ public class EmailPasswordActivity extends AppCompatActivity implements
                             SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
                             pref.edit().putInt("loginType",2).commit();
                             finish();
-                            Intent i = new Intent(EmailPasswordActivity.this, MainActivity.class);
-                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            startActivity(i);
+                            startActivity(new Intent(EmailPasswordActivity.this, MainActivity.class));
+                            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
                         }
 
                         // [START_EXCLUDE]
