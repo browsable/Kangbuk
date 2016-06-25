@@ -56,11 +56,9 @@ import hwang.daemin.kangbuk.fragments.week.WeekWedFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,GoogleApiClient.OnConnectionFailedListener {
-    public static final String ANONYMOUS = "anonymous";
     private static final String TAG = "MainActivity";
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_INVITE = 1;
-    private static final int REQ_START_STANDALONE_PLAYER = 2;
     private BackPressCloseHandler backPressCloseHandler;
     // Firebase instance variables
 
@@ -74,26 +72,9 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
         My.INFO.loginType = pref.getInt("loginType",0);
-        if(fUtil.firebaseUser==null){
-            // Not signed in, launch the Sign In activity
-            startActivity(new Intent(this, SignInActivity.class));
-            finish();
-            return;
-        }else{
-            if( My.INFO.loginType==0|| My.INFO.loginType==1) { //google, facebook
-                My.INFO.name = fUtil.firebaseUser.getDisplayName();
-                if(My.INFO.loginType==1) FacebookSdk.sdkInitialize(getApplicationContext());
-            }else if( My.INFO.loginType==2){ //email
-                My.INFO.name = pref.getString("UserName","anonymous");
-            }else if( My.INFO.loginType==3){ //anonymous
-                My.INFO.name = ANONYMOUS;
-            }
-            My.INFO.id = fUtil.firebaseUser.getUid();
-            if(fUtil.firebaseUser.getPhotoUrl() != null){
-                My.INFO.photoUrl = fUtil.firebaseUser.getPhotoUrl().toString();
-            }
+        fUtil.FirebaseInstanceInit();
+        if(My.INFO.loginType==1) FacebookSdk.sdkInitialize(getApplicationContext());
 
-        }
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
@@ -178,7 +159,7 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.action_profile:
                 Intent i = new Intent(MainActivity.this, UserDetailActivity.class);
-                i.putExtra("uId", fUtil.getCurrentUserId());
+                i.putExtra("uId",fUtil.getCurrentUserId());
                 startActivity(i);
                 return true;
             case R.id.sign_out_menu:
@@ -187,7 +168,6 @@ public class MainActivity extends AppCompatActivity
                     Auth.GoogleSignInApi.signOut(mGoogleApiClient);
                 else if(My.INFO.loginType==1)
                     LoginManager.getInstance().logOut();
-                My.INFO.name = ANONYMOUS;
                 startActivity(new Intent(this, SignInActivity.class));
                 finish();
                 return true;

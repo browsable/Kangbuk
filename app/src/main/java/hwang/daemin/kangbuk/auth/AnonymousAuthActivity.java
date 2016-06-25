@@ -22,8 +22,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -42,11 +44,11 @@ import hwang.daemin.kangbuk.main.MainActivity;
 /**
  * Activity to demonstrate anonymous login and account linking (with an email/password account).
  */
-public class AnonymousAuthActivity extends BaseActivity implements
+public class AnonymousAuthActivity extends AppCompatActivity implements
         View.OnClickListener {
 
     private static final String TAG = "AnonymousAuth";
-
+    private ProgressBar bar;
     // [START declare_auth]
     private FirebaseAuth mAuth;
     // [END declare_auth]
@@ -64,7 +66,7 @@ public class AnonymousAuthActivity extends BaseActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_anonymous_auth);
-
+        bar = (ProgressBar) findViewById(R.id.progressBar);
         // [START initialize_auth]
         mAuth = fUtil.firebaseAuth;
         // [END initialize_auth]
@@ -82,7 +84,7 @@ public class AnonymousAuthActivity extends BaseActivity implements
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
                 // [START_EXCLUDE]
-                hideProgressDialog();
+                bar.setVisibility(View.GONE);
                 // [END_EXCLUDE]
             }
         };
@@ -113,7 +115,7 @@ public class AnonymousAuthActivity extends BaseActivity implements
     // [END on_stop_remove_listener]
 
     private void signInAnonymously() {
-        showProgressDialog();
+        bar.setVisibility(View.VISIBLE);
         // [START signin_anonymously]
         mAuth.signInAnonymously()
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
@@ -129,21 +131,19 @@ public class AnonymousAuthActivity extends BaseActivity implements
                             Toast.makeText(AnonymousAuthActivity.this, getString(R.string.auth_sigin_failed),
                                     Toast.LENGTH_SHORT).show();
                         }else{
-                            SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
-                            pref.edit().putInt("loginType",3).commit();
-                            finish();
+                            SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
+                            pref.edit().putInt("loginType",3).apply();
                             FirebaseUser mFirebaseUser = task.getResult().getUser();
                             Random r = new Random();
                             String bibleNum = String.valueOf(r.nextInt(239));
-                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null,bibleNum));
+                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User("anonymous",null,null,bibleNum));
                             Intent i = new Intent(AnonymousAuthActivity.this, MainActivity.class);
-                            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                             startActivity(i);
+                            finish();
                         }
 
                         // [START_EXCLUDE]
-                        hideProgressDialog();
+                        bar.setVisibility(View.GONE);
                         // [END_EXCLUDE]
                     }
                 });

@@ -22,7 +22,10 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.multidex.MultiDex;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.facebook.AccessToken;
@@ -50,10 +53,10 @@ import hwang.daemin.kangbuk.main.MainActivity;
 /**
  * Demonstrate Firebase Authentication using a Facebook access token.
  */
-public class FacebookLoginActivity extends BaseActivity{
+public class FacebookLoginActivity extends AppCompatActivity{
 
     private static final String TAG = "FacebookLogin";
-
+    private ProgressBar bar;
     // [START declare_auth]
     private FirebaseAuth mAuth;
     // [END declare_auth]
@@ -69,7 +72,7 @@ public class FacebookLoginActivity extends BaseActivity{
         super.onCreate(savedInstanceState);
         FacebookSdk.sdkInitialize(getApplicationContext());
         setContentView(R.layout.activity_facebook);
-
+        bar = (ProgressBar) findViewById(R.id.progressBar);
         // [START initialize_auth]
         // Initialize Firebase Auth
         mAuth = fUtil.firebaseAuth;
@@ -84,18 +87,16 @@ public class FacebookLoginActivity extends BaseActivity{
                     // My is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
-                    pref.edit().putInt("loginType",1).commit();
-                    finish();
+                    pref.edit().putInt("loginType",1).apply();
                     Intent i = new Intent(FacebookLoginActivity.this, MainActivity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(i);
+                    finish();
                 } else {
                     // My is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
                 }
                 // [START_EXCLUDE]
-                hideProgressDialog();
+                bar.setVisibility(View.GONE);
                 // [END_EXCLUDE]
             }
         };
@@ -117,7 +118,7 @@ public class FacebookLoginActivity extends BaseActivity{
             public void onCancel() {
                 Log.d(TAG, "facebook:onCancel");
                 // [START_EXCLUDE]
-                hideProgressDialog();
+                bar.setVisibility(View.GONE);
                 // [END_EXCLUDE]
             }
 
@@ -125,7 +126,7 @@ public class FacebookLoginActivity extends BaseActivity{
             public void onError(FacebookException error) {
                 Log.d(TAG, "facebook:onError", error);
                 // [START_EXCLUDE]
-                hideProgressDialog();
+                bar.setVisibility(View.GONE);
                 // [END_EXCLUDE]
             }
         });
@@ -165,7 +166,7 @@ public class FacebookLoginActivity extends BaseActivity{
     private void handleFacebookAccessToken(AccessToken token) {
         Log.d(TAG, "handleFacebookAccessToken:" + token);
         // [START_EXCLUDE silent]
-        showProgressDialog();
+        bar.setVisibility(View.VISIBLE);
         // [END_EXCLUDE]
 
         AuthCredential credential = FacebookAuthProvider.getCredential(token.getToken());
@@ -183,13 +184,19 @@ public class FacebookLoginActivity extends BaseActivity{
                             Toast.makeText(FacebookLoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }else{
+                            SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
+                            pref.edit().putInt("loginType",1).apply();
+                            finish();
                             FirebaseUser mFirebaseUser = task.getResult().getUser();
                             Random r = new Random();
                             String bibleNum = String.valueOf(r.nextInt(239));
                             fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null,bibleNum));
+                            Intent i = new Intent(FacebookLoginActivity.this, MainActivity.class);
+                            i.putExtra("uId", mFirebaseUser.getUid());
+                            startActivity(i);
                         }
                         // [START_EXCLUDE]
-                        hideProgressDialog();
+                        bar.setVisibility(View.GONE);
                         // [END_EXCLUDE]
                     }
                 });

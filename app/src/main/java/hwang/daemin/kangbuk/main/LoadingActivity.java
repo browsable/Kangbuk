@@ -3,21 +3,13 @@ package hwang.daemin.kangbuk.main;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
-
-import java.util.Random;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.common.DialDefault;
-import hwang.daemin.kangbuk.common.My;
-import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.auth.SignInActivity;
 
 /**
  * Created by user on 2016-06-11.
@@ -28,15 +20,30 @@ public class LoadingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_loading);
-        fUtil.FirebaseInstanceInit();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                finish();
-                Intent i = new Intent(LoadingActivity.this, MainActivity.class);
-                startActivity(i);
-                overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-            }
-        }, 2200);
+        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
+        FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+        if(firebaseUser==null){
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                    Intent i = new Intent(LoadingActivity.this, SignInActivity.class);
+                    startActivity(i);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                }
+            }, 2200);
+            return;
+        }else{
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    finish();
+                    Intent i = new Intent(LoadingActivity.this, MainActivity.class);
+                    startActivity(i);
+                    overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+                }
+            }, 2200);
+        }
+
     }
 }

@@ -26,9 +26,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,13 +47,12 @@ import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.auth.BaseActivity;
 import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.fragments.picture.NewPicUploadTaskFragment;
 import pub.devrel.easypermissions.EasyPermissions;
 
-public class UserDetailActivity extends BaseActivity implements
+public class UserDetailActivity extends AppCompatActivity implements
         EasyPermissions.PermissionCallbacks,
         NewPicUploadTaskFragment.TaskCallbacks {
     private final String TAG = "UserDetailActivity";
@@ -70,6 +71,7 @@ public class UserDetailActivity extends BaseActivity implements
     public RequestManager mGlideRequestManager;
     private TextView tvPos, tvKo, tvEn;
     private String bibleNum;
+    private ProgressBar bar;
     private static final String[] cameraPerms = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -88,6 +90,7 @@ public class UserDetailActivity extends BaseActivity implements
                 (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar);
         collapsingToolbar.setTitle(fUtil.getCurrentUserName());
         ivProfile = (CircleImageView) findViewById(R.id.ivProfile);
+        bar = (ProgressBar) findViewById(R.id.progressBar);
         tvPos = (TextView) findViewById(R.id.tvPos);
         tvKo = (TextView) findViewById(R.id.tvKo);
         tvEn = (TextView) findViewById(R.id.tvEn);
@@ -207,7 +210,7 @@ public class UserDetailActivity extends BaseActivity implements
                 case REQUEST_IMAGE_PIC:
                     mFileUri = data.getData();
                 case REQUEST_IMAGE_UPLOAD:
-                    showProgressDialog();
+                    bar.setVisibility(View.VISIBLE);
                     mTaskFragment.resizeBitmapWithPath(getPathFromUri(mFileUri), THUMBNAIL_MAX_DIMENSION);
                     mTaskFragment.resizeBitmapWithPath(getPathFromUri(mFileUri), FULL_SIZE_MAX_DIMENSION);
                     break;
@@ -287,7 +290,7 @@ public class UserDetailActivity extends BaseActivity implements
             @Override
             public void run() {
                 ivProfile.setEnabled(true);
-                hideProgressDialog();
+                bar.setVisibility(View.GONE);
                 if (error != null) {
                     Toast.makeText(UserDetailActivity.this, error, Toast.LENGTH_SHORT).show();
                 }

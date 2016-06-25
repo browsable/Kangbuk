@@ -16,6 +16,13 @@
         android:text="@string/sign_in"
         android:layout_marginTop="@dimen/margin_xxl"
         android:theme="@style/ThemeOverlay.MyDarkButton" />
-
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
 
 </RelativeLayout>

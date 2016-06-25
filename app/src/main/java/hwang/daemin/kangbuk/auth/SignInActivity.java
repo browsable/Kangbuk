@@ -90,10 +90,10 @@ public class SignInActivity extends AppCompatActivity implements
     }
 
     private void signIn(){
+        SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
+        pref.edit().putInt("loginType",0).apply();
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
-        SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
-        pref.edit().putInt("loginType",0).commit();
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -118,13 +118,13 @@ public class SignInActivity extends AppCompatActivity implements
                     Log.w(TAG,"signInWithCredentail", task.getException());
                     Toast.makeText(SignInActivity.this, getString(R.string.auth_sigin_failed), Toast.LENGTH_SHORT).show();
                 }else{
+                    SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
+                    pref.edit().putInt("loginType",0).apply();
                     FirebaseUser mFirebaseUser = task.getResult().getUser();
                     Random r = new Random();
                     String bibleNum = String.valueOf(r.nextInt(239));
                     fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null,bibleNum));
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
-                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(i);
                     finish();
                 }

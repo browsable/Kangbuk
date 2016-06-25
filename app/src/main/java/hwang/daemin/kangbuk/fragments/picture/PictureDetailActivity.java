@@ -3,6 +3,7 @@ package hwang.daemin.kangbuk.fragments.picture;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
@@ -33,7 +34,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.auth.BaseActivity;
 import hwang.daemin.kangbuk.common.GlideUtil;
 import hwang.daemin.kangbuk.data.Comment;
 import hwang.daemin.kangbuk.data.PictureData;
@@ -41,7 +41,7 @@ import hwang.daemin.kangbuk.data.User;
 import hwang.daemin.kangbuk.firebase.fUtil;
 import hwang.daemin.kangbuk.main.UserDetailActivity;
 
-public class PictureDetailActivity extends BaseActivity implements View.OnClickListener {
+public class PictureDetailActivity extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = "PictureDetailActivity";
 
