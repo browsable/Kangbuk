@@ -32,7 +32,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Random;
 
@@ -75,10 +74,10 @@ public class AnonymousAuthActivity extends AppCompatActivity implements
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                fUtil.firebaseUser = firebaseAuth.getCurrentUser();
+                if (fUtil.firebaseUser != null) {
                     // My is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + fUtil.firebaseUser.getUid());
                 } else {
                     // My is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -131,15 +130,17 @@ public class AnonymousAuthActivity extends AppCompatActivity implements
                             Toast.makeText(AnonymousAuthActivity.this, getString(R.string.auth_sigin_failed),
                                     Toast.LENGTH_SHORT).show();
                         }else{
+                            finish();
                             SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
                             pref.edit().putInt("loginType",3).apply();
-                            FirebaseUser mFirebaseUser = task.getResult().getUser();
+                            fUtil.firebaseUser = task.getResult().getUser();
                             Random r = new Random();
                             String bibleNum = String.valueOf(r.nextInt(239));
-                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User("anonymous",null,null,bibleNum));
+                            fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User("anonymous",null,null,bibleNum));
                             Intent i = new Intent(AnonymousAuthActivity.this, MainActivity.class);
+                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(i);
-                            finish();
                         }
 
                         // [START_EXCLUDE]

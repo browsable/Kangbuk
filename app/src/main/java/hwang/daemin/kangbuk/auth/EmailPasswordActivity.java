@@ -127,11 +127,13 @@ public class EmailPasswordActivity extends AppCompatActivity implements
                         }else{
                             SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
                             pref.edit().putInt("loginType",2).apply();
-                            FirebaseUser mFirebaseUser = task.getResult().getUser();
+                            fUtil.firebaseUser = task.getResult().getUser();
                             Random r = new Random();
                             String bibleNum = String.valueOf(r.nextInt(239));
-                            fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(name,null,null,bibleNum));
+                            fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User(name,null,null,bibleNum));
                             Intent i = new Intent(EmailPasswordActivity.this, MainActivity.class);
+                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(i);
                             finish();
                         }
@@ -171,6 +173,8 @@ public class EmailPasswordActivity extends AppCompatActivity implements
                             pref.edit().putInt("loginType",2).commit();
                             finish();
                             Intent i = new Intent(EmailPasswordActivity.this, MainActivity.class);
+                            i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                             startActivity(i);
                         }
 

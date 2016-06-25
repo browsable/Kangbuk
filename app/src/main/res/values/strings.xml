@@ -27,7 +27,7 @@
     <string name="nav_place">교회약도</string>
     <!--Auth-->
     <string name="inputname">이름을 입력하세요</string>
-    <string name="auth_creat_failed">등록된 계정이거나 이메일 형식이 잘못되었습니다</string>
+    <string name="auth_creat_failed">등록된 계정이거나 이메일 혹은 비밀번호 형식이 잘못되었습니다</string>
     <string name="auth_sigin_failed">인증 실패</string>
     <string name="hint_user_id">User ID</string>
     <string name="get_custom_token">Get Token</string>

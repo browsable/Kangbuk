@@ -25,8 +25,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.util.HashMap;
@@ -62,8 +60,6 @@ public class MainActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
     private static final int REQUEST_INVITE = 1;
     private BackPressCloseHandler backPressCloseHandler;
-    FirebaseAuth firebaseAuth;
-    FirebaseUser firebaseUser;
     // Firebase instance variables
 
     @Override
@@ -76,8 +72,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         SharedPreferences pref = getSharedPreferences("USERINFO", MODE_PRIVATE);
         My.INFO.loginType = pref.getInt("loginType",0);
-        firebaseAuth = FirebaseAuth.getInstance();
-        firebaseUser = firebaseAuth.getCurrentUser();
         if(My.INFO.loginType==1) FacebookSdk.sdkInitialize(getApplicationContext());
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -110,7 +104,7 @@ public class MainActivity extends AppCompatActivity
         Map<String, Object> bibleRandom = new HashMap<>();
         Random r = new Random();
         bibleRandom.put("biblenum",String.valueOf(r.nextInt(239)));
-        fUtil.databaseReference.child("user").child(firebaseUser.getUid()).updateChildren(bibleRandom);
+        fUtil.databaseReference.child("user").child(fUtil.getCurrentUserId()).updateChildren(bibleRandom);
     }
     public void fetchConfig() {
         long cacheExpiration = 3600;
@@ -164,7 +158,7 @@ public class MainActivity extends AppCompatActivity
         switch (item.getItemId()) {
             case R.id.action_profile:
                 Intent i = new Intent(MainActivity.this, UserDetailActivity.class);
-                i.putExtra("uId",firebaseUser.getUid());
+                i.putExtra("uId",fUtil.getCurrentUserId());
                 startActivity(i);
                 return true;
             case R.id.sign_out_menu:

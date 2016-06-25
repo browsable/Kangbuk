@@ -37,15 +37,14 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.Random;
 
-import hwang.daemin.kangbuk.firebase.fUtil;
-import hwang.daemin.kangbuk.data.User;
-import hwang.daemin.kangbuk.main.MainActivity;
 import hwang.daemin.kangbuk.R;
+import hwang.daemin.kangbuk.data.User;
+import hwang.daemin.kangbuk.firebase.fUtil;
+import hwang.daemin.kangbuk.main.MainActivity;
 
 public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener{
@@ -120,11 +119,13 @@ public class SignInActivity extends AppCompatActivity implements
                 }else{
                     SharedPreferences pref =  getSharedPreferences("USERINFO", MODE_PRIVATE);
                     pref.edit().putInt("loginType",0).apply();
-                    FirebaseUser mFirebaseUser = task.getResult().getUser();
+                    fUtil.firebaseUser = task.getResult().getUser();
                     Random r = new Random();
                     String bibleNum = String.valueOf(r.nextInt(239));
-                    fUtil.getUserRef().child(mFirebaseUser.getUid()).setValue(new User(mFirebaseUser.getDisplayName(),null,null,bibleNum));
+                    fUtil.getUserRef().child(fUtil.firebaseUser.getUid()).setValue(new User(fUtil.firebaseUser.getDisplayName(),null,null,bibleNum));
                     Intent i = new Intent(SignInActivity.this, MainActivity.class);
+                    i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(i);
                     finish();
                 }
