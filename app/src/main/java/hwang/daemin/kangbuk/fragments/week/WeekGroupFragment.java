@@ -1,56 +1,40 @@
 package hwang.daemin.kangbuk.fragments.week;
 
 import android.app.Fragment;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.text.Editable;
-import android.text.InputFilter;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.firebase.ui.database.FirebaseRecyclerAdapter;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.ValueEventListener;
-import com.google.firebase.storage.StorageReference;
 
-import de.hdodenhof.circleimageview.CircleImageView;
 import hwang.daemin.kangbuk.R;
-import hwang.daemin.kangbuk.common.CodelabPreferences;
 import hwang.daemin.kangbuk.common.My;
 import hwang.daemin.kangbuk.data.GroupData;
 import hwang.daemin.kangbuk.firebase.fUtil;
-import hwang.daemin.kangbuk.main.UserDetailActivity;
 
 
 /**
  * Created by user on 2016-06-14.
  */
 public class WeekGroupFragment extends Fragment {
-    public static final String WEEK_GROUP = "weekgroup";
-    private Button mSendButton;
-    private EditText mMessageEditText;
-    private SharedPreferences mSharedPreferences;
-    private StorageReference mStoreRefThumb;
-    public static final int DEFAULT_MSG_LENGTH_LIMIT = 30;
-    private LinearLayoutManager mLinearLayoutManager;
-    private RecyclerView mMessageRecyclerView;
-    private FirebaseRecyclerAdapter<GroupData, MessageViewHolder>
-            mFirebaseAdapter;
-    private String tmpThumbPhotoURL;
-
+    private ProgressBar bar;
+    public static final String WEEK_GROUP = "weekgroup2";
+    LinearLayout btSave;
+    EditText[][] editText;
+    GroupData groupData;
+    String packageName;
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -58,132 +42,121 @@ public class WeekGroupFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_week_group, container, false);
         My.INFO.backKeyName = "";
         ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(getString(R.string.nav_week_group));
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        mMessageRecyclerView = (RecyclerView) rootView.findViewById(R.id.messageRecyclerView);
-        mLinearLayoutManager = new LinearLayoutManager(getActivity());
-        mLinearLayoutManager.setStackFromEnd(true);
-        mMessageRecyclerView.setLayoutManager(mLinearLayoutManager);
-        // New child entries
-        mFirebaseAdapter = new FirebaseRecyclerAdapter<GroupData,
-                MessageViewHolder>(
-                GroupData.class,
-                R.layout.listitem_message,
-                MessageViewHolder.class,
-                fUtil.databaseReference.child(WEEK_GROUP)) {
-
-            @Override
-            protected void populateViewHolder(final MessageViewHolder viewHolder,
-                                              GroupData groupData, int position) {
-                final MessageViewHolder viewHol = viewHolder;
-                viewHol.messageTextView.setText(groupData.getText());
-                viewHol.messengerTextView.setText(groupData.getName());
-                final String uId = groupData.getuId();
-                fUtil.databaseReference.child("user/" + uId + "/thumbPhotoURL/").addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        tmpThumbPhotoURL = (String) dataSnapshot.getValue();
-                        Glide.with(getActivity())
-                                .load(tmpThumbPhotoURL)
-                                .placeholder(R.drawable.ic_account_circle_black_36dp)
-                                .dontAnimate()
-                                .fitCenter()
-                                .into(viewHol.messengerImageView);
+        bar = (ProgressBar) rootView.findViewById(R.id.progressBar);
+        editText = new EditText[10][6];
+        int resourceId;
+        packageName = getActivity().getPackageName();
+        for (int i=0; i<10; i++){
+            for(int j=0; j<6; j++){
+                resourceId = getResources().getIdentifier("etGroup"+i+"_"+j, "id", packageName);
+                editText[i][j] = (EditText) rootView.findViewById(resourceId);
+            }
+        }
+        try {
+            fUtil.databaseReference.child(WEEK_GROUP).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    GroupData groupData = dataSnapshot.getValue(GroupData.class);
+                    if(groupData!=null) {
+                        editText[0][0].setText(groupData.getEtGroup0_0());
+                        editText[0][1].setText(groupData.getEtGroup0_1());
+                        editText[0][2].setText(groupData.getEtGroup0_2());
+                        editText[0][3].setText(groupData.getEtGroup0_3());
+                        editText[0][4].setText(groupData.getEtGroup0_4());
+                        editText[0][5].setText(groupData.getEtGroup0_5());
+                        editText[1][0].setText(groupData.getEtGroup1_0());
+                        editText[1][1].setText(groupData.getEtGroup1_1());
+                        editText[1][2].setText(groupData.getEtGroup1_2());
+                        editText[1][3].setText(groupData.getEtGroup1_3());
+                        editText[1][4].setText(groupData.getEtGroup1_4());
+                        editText[1][5].setText(groupData.getEtGroup1_5());
+                        editText[2][0].setText(groupData.getEtGroup2_0());
+                        editText[2][1].setText(groupData.getEtGroup2_1());
+                        editText[2][2].setText(groupData.getEtGroup2_2());
+                        editText[2][3].setText(groupData.getEtGroup2_3());
+                        editText[2][4].setText(groupData.getEtGroup2_4());
+                        editText[2][5].setText(groupData.getEtGroup2_5());
+                        editText[3][0].setText(groupData.getEtGroup3_0());
+                        editText[3][1].setText(groupData.getEtGroup3_1());
+                        editText[3][2].setText(groupData.getEtGroup3_2());
+                        editText[3][3].setText(groupData.getEtGroup3_3());
+                        editText[3][4].setText(groupData.getEtGroup3_4());
+                        editText[3][5].setText(groupData.getEtGroup3_5());
+                        editText[4][0].setText(groupData.getEtGroup4_0());
+                        editText[4][1].setText(groupData.getEtGroup4_1());
+                        editText[4][2].setText(groupData.getEtGroup4_2());
+                        editText[4][3].setText(groupData.getEtGroup4_3());
+                        editText[4][4].setText(groupData.getEtGroup4_4());
+                        editText[4][5].setText(groupData.getEtGroup4_5());
+                        editText[5][0].setText(groupData.getEtGroup5_0());
+                        editText[5][1].setText(groupData.getEtGroup5_1());
+                        editText[5][2].setText(groupData.getEtGroup5_2());
+                        editText[5][3].setText(groupData.getEtGroup5_3());
+                        editText[5][4].setText(groupData.getEtGroup5_4());
+                        editText[5][5].setText(groupData.getEtGroup5_5());
+                        editText[6][0].setText(groupData.getEtGroup6_0());
+                        editText[6][1].setText(groupData.getEtGroup6_1());
+                        editText[6][2].setText(groupData.getEtGroup6_2());
+                        editText[6][3].setText(groupData.getEtGroup6_3());
+                        editText[6][4].setText(groupData.getEtGroup6_4());
+                        editText[6][5].setText(groupData.getEtGroup6_5());
+                        editText[7][0].setText(groupData.getEtGroup7_0());
+                        editText[7][1].setText(groupData.getEtGroup7_1());
+                        editText[7][2].setText(groupData.getEtGroup7_2());
+                        editText[7][3].setText(groupData.getEtGroup7_3());
+                        editText[7][4].setText(groupData.getEtGroup7_4());
+                        editText[7][5].setText(groupData.getEtGroup7_5());
+                        editText[8][0].setText(groupData.getEtGroup8_0());
+                        editText[8][1].setText(groupData.getEtGroup8_1());
+                        editText[8][2].setText(groupData.getEtGroup8_2());
+                        editText[8][3].setText(groupData.getEtGroup8_3());
+                        editText[8][4].setText(groupData.getEtGroup8_4());
+                        editText[8][5].setText(groupData.getEtGroup8_5());
+                        editText[9][0].setText(groupData.getEtGroup9_0());
+                        editText[9][1].setText(groupData.getEtGroup9_1());
+                        editText[9][2].setText(groupData.getEtGroup9_2());
+                        editText[9][3].setText(groupData.getEtGroup9_3());
+                        editText[9][4].setText(groupData.getEtGroup9_4());
+                        editText[9][5].setText(groupData.getEtGroup9_5());
                     }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
-                if(fUtil.getCurrentUserId().equals(uId)) {
-                    viewHolder.btRemove.setVisibility(View.VISIBLE);
-                    viewHolder.btRemove.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            fUtil.databaseReference.child("weekgroup/" + uId).removeValue();
-                        }
-                    });
+                    bar.setVisibility(View.GONE);
                 }
-                viewHol.messengerImageView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent i = new Intent(getActivity(), UserDetailActivity.class);
-                        i.putExtra("uId",uId);
-                        startActivity(i);
-                    }
-                });
-            }
-        };
 
-        mFirebaseAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
-            @Override
-            public void onItemRangeInserted(int positionStart, int itemCount) {
-                super.onItemRangeInserted(positionStart, itemCount);
-                int groupDataCount = mFirebaseAdapter.getItemCount();
-                int lastVisiblePosition =
-                        mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
-                // If the recycler view is initially being loaded or the
-                // user is at the bottom of the list, scroll to the bottom
-                // of the list to show the newly added message.
-                if (lastVisiblePosition == -1 ||
-                        (positionStart >= (groupDataCount - 1) &&
-                                lastVisiblePosition == (positionStart - 1))) {
-                    mMessageRecyclerView.scrollToPosition(positionStart);
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
                 }
-            }
-        });
-        mMessageRecyclerView.setAdapter(mFirebaseAdapter);
-
-        mMessageEditText = (EditText) rootView.findViewById(R.id.messageEditText);
-        mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(mSharedPreferences
-                .getInt(CodelabPreferences.FRIENDLY_MSG_LENGTH, DEFAULT_MSG_LENGTH_LIMIT))});
-        mMessageEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                if (charSequence.toString().trim().length() > 0) {
-                    mSendButton.setEnabled(true);
-                } else {
-                    mSendButton.setEnabled(false);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {
-            }
-        });
-
-        mSendButton = (Button) rootView.findViewById(R.id.sendButton);
-        mSendButton.setOnClickListener(new View.OnClickListener() {
+            });
+        }catch (NullPointerException e){
+            e.printStackTrace();
+        }
+        btSave = (LinearLayout) rootView.findViewById(R.id.btSave);
+        btSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Send messages on click.
-                String uId = fUtil.getCurrentUserId();
-                GroupData groupData = new GroupData(mMessageEditText.getText().toString(),
-                        fUtil.getCurrentUserName(), uId);
-                fUtil.databaseReference.child(WEEK_GROUP).child(fUtil.getCurrentUserId()).setValue(groupData);
-                mMessageEditText.setText("");
+                bar.setVisibility(View.VISIBLE);
+                groupData = new GroupData(
+                        editText[0][0].getText().toString(),editText[0][1].getText().toString(),editText[0][2].getText().toString(),editText[0][3].getText().toString(),editText[0][4].getText().toString(),editText[0][5].getText().toString(),
+                        editText[1][0].getText().toString(),editText[1][1].getText().toString(),editText[1][2].getText().toString(),editText[1][3].getText().toString(),editText[1][4].getText().toString(),editText[1][5].getText().toString(),
+                        editText[2][0].getText().toString(),editText[2][1].getText().toString(),editText[2][2].getText().toString(),editText[2][3].getText().toString(),editText[2][4].getText().toString(),editText[2][5].getText().toString(),
+                        editText[3][0].getText().toString(),editText[3][1].getText().toString(),editText[3][2].getText().toString(),editText[3][3].getText().toString(),editText[3][4].getText().toString(),editText[3][5].getText().toString(),
+                        editText[4][0].getText().toString(),editText[4][1].getText().toString(),editText[4][2].getText().toString(),editText[4][3].getText().toString(),editText[4][4].getText().toString(),editText[4][5].getText().toString(),
+                        editText[5][0].getText().toString(),editText[5][1].getText().toString(),editText[5][2].getText().toString(),editText[5][3].getText().toString(),editText[5][4].getText().toString(),editText[5][5].getText().toString(),
+                        editText[6][0].getText().toString(),editText[6][1].getText().toString(),editText[6][2].getText().toString(),editText[6][3].getText().toString(),editText[6][4].getText().toString(),editText[6][5].getText().toString(),
+                        editText[7][0].getText().toString(),editText[7][1].getText().toString(),editText[7][2].getText().toString(),editText[7][3].getText().toString(),editText[7][4].getText().toString(),editText[7][5].getText().toString(),
+                        editText[8][0].getText().toString(),editText[8][1].getText().toString(),editText[8][2].getText().toString(),editText[8][3].getText().toString(),editText[8][4].getText().toString(),editText[8][5].getText().toString(),
+                        editText[9][0].getText().toString(),editText[9][1].getText().toString(),editText[9][2].getText().toString(),editText[9][3].getText().toString(),editText[9][4].getText().toString(),editText[9][5].getText().toString());
+
+                fUtil.databaseReference.child(WEEK_GROUP).setValue(groupData).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        Toast.makeText(getActivity(), "저장되었습니다.", Toast.LENGTH_SHORT).show();
+                        bar.setVisibility(View.GONE);
+                    }
+                });
             }
         });
-
+        // New child entries
         return rootView;
     }
-
-    public static class MessageViewHolder extends RecyclerView.ViewHolder {
-        public TextView messageTextView;
-        public TextView messengerTextView;
-        public CircleImageView messengerImageView;
-        public Button btRemove;
-
-        public MessageViewHolder(View v) {
-            super(v);
-            messageTextView = (TextView) itemView.findViewById(R.id.messageTextView);
-            messengerTextView = (TextView) itemView.findViewById(R.id.messengerTextView);
-            messengerImageView = (CircleImageView) itemView.findViewById(R.id.messengerImageView);
-            btRemove = (Button) itemView.findViewById(R.id.btRemove);
-        }
-    }
-
 
 }
